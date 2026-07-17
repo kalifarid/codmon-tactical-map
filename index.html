@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CODMON - Taktiki İdarəetmə Paneli (Mission Control)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: #020205;
+            color: #00ffcc;
+            overflow: hidden;
+            margin: 0;
+        }
+        /* Kiber Grid Fonu */
+        .cyber-bg {
+            background-image: linear-gradient(rgba(0, 255, 204, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 255, 204, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        /* Neon Kölgələr */
+        .neon-border {
+            border: 1px solid rgba(0, 255, 204, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.1);
+            backdrop-filter: blur(5px);
+        }
+        .neon-text {
+            text-shadow: 0 0 8px rgba(0, 255, 204, 0.6);
+        }
+        /* Radar animasiyası */
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+        .radar-wave {
+            position: absolute;
+            border: 2px solid #00ffcc;
+            border-radius: 50%;
+            animation: pulse 4s infinite linear;
+        }
+        /* Sürüşmə paneli (Scrollbar) */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00ffcc;
+        }
+    </style>
+</head>
+<body class="cyber-bg h-screen w-screen relative select-none">
+
+    <div id="canvas-container" class="absolute inset-0 z-0"></div>
+
+    <div class="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-6">
+        
+        <header class="flex justify-between items-center pointer-events-auto">
+            <div class="neon-border bg-black/60 px-6 py-3 flex items-center space-x-4">
+                <div class="w-3 h-3 bg-red-600 rounded-full animate-ping"></div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-widest neon-text">CODMON // TACTICAL MAP</h1>
+                    <p class="text-xs text-cyan-400">STATUS: ACTIVE SWARM SIMULATION</p>
+                </div>
+            </div>
+            
+            <div class="neon-border bg-black/60 px-6 py-3 text-right">
+                <span class="text-xs block text-cyan-400">COORDINATES // SECTOR 04-A</span>
+                <span class="text-sm font-mono tracking-wider" id="live-coords">40.4093° N, 49.8671° E</span>
+            </div>
+        </header>
+
+        <div class="flex justify-between items-stretch h-[65vh] my-4">
+            
+            <aside class="w-80 neon-border bg-black/60 p-4 pointer-events-auto flex flex-col justify-between overflow-y-auto">
+                <div>
+                    <div class="border-b border-cyan-500/30 pb-2 mb-4">
+                        <span class="text-xs text-cyan-400">SWARM INTEL // DRON STATS</span>
+                    </div>
+                    
+                    <div class="space-y-3" id="drone-list">
+                        </div>
+                </div>
+
+                <div class="border-t border-cyan-500/30 pt-4 mt-4 text-xs space-y-1">
+                    <div class="flex justify-between"><span>TOTAL UNITS:</span><span class="font-bold">12 / CODMON-V1</span></div>
+                    <div class="flex justify-between"><span>SWARM INTEGRITY:</span><span class="text-emerald-400 font-bold">98.4%</span></div>
+                    <div class="flex justify-between"><span>COMM LINK:</span><span class="text-emerald-400 font-bold">STABLE</span></div>
+                </div>
+            </aside>
+
+            <aside class="w-80 neon-border bg-black/60 p-4 pointer-events-auto flex flex-col justify-between">
+                <div>
+                    <div class="border-b border-cyan-500/30 pb-2 mb-4">
+                        <span class="text-xs text-cyan-400">TARGET ACQUISITION</span>
+                    </div>
+                    
+                    <div class="bg-red-950/20 border border-red-500/30 p-3 rounded mb-4">
+                        <div class="flex justify-between text-red-500 text-xs font-bold mb-1">
+                            <span>CRITICAL TARGET</span>
+                            <span class="animate-pulse">⚠️ LOCKED</span>
+                        </div>
+                        <p class="text-lg font-bold text-red-400">CORVETTE-X9</p>
+                        <p class="text-[10px] text-red-500/80">DST: 4.2 KM | SPD: 18 KNOTS</p>
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <span class="text-cyan-400 block mb-1">MISSION PARAMETERS:</span>
+                        <div class="flex justify-between border-b border-cyan-900 py-1"><span>AUTONOMY MODE:</span><span class="text-yellow-400">SWARM-DECISION</span></div>
+                        <div class="flex justify-between border-b border-cyan-900 py-1"><span>ATTACK PROTOCOL:</span><span class="text-red-500">STANDBY</span></div>
+                        <div class="flex justify-between border-b border-cyan-900 py-1"><span>ANTI-JAMMING:</span><span class="text-emerald-400">ACTIVE</span></div>
+                    </div>
+                </div>
+
+                <div class="space-y-2 pt-4">
+                    <button id="btn-attack" class="w-full bg-red-600/20 hover:bg-red-600/40 border border-red-500 text-red-400 py-2 text-xs font-bold tracking-wider transition duration-300">
+                        ENGAGE ATTACK MODE
+                    </button>
+                    <button id="btn-swarm" class="w-full bg-cyan-600/20 hover:bg-cyan-600/40 border border-cyan-500 text-cyan-400 py-2 text-xs font-bold tracking-wider transition duration-300">
+                        RE-ROUTE SWARM PATH
+                    </button>
+                </div>
+            </aside>
+        </div>
+
+        <footer class="neon-border bg-black/60 p-4 pointer-events-auto flex justify-between items-center">
+            <div class="text-xs flex space-x-6">
+                <div><span class="text-cyan-400">SYSTEM TIME:</span> <span id="sys-time">00:00:00</span></div>
+                <div><span class="text-cyan-400">LATENCY:</span> <span class="text-emerald-400">12ms</span></div>
+                <div><span class="text-cyan-400">COMPASS:</span> <span id="compass-dir">180° S</span></div>
+            </div>
+            <div class="text-xs text-cyan-400/80 italic" id="log-ticker">
+                >> INITIALIZING TACTICAL MAP OVERLAY... DONE.
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // --- 1. SƏHNƏ VƏ KAMERA QURAŞDIRILMASI ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x020205, 0.015);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 35, 55);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setClearColor(scene.fog.color);
+        container.appendChild(renderer.domElement);
+
+        // Kamera idarəsi (Siçanla fırlatmaq və yaxınlaşdırmaq üçün)
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 - 0.05; // Yerin altına girməyi əngəlləyir
+        controls.minDistance = 10;
+        controls.maxDistance = 120;
+
+        // --- 2. İŞIQLANDIRMA ---
+        const ambientLight = new THREE.AmbientLight(0x0d2222);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0x00ffcc, 1);
+        dirLight.position.set(5, 20, 10);
+        scene.add(dirLight);
+
+        // --- 3. DƏNİZ SAHƏSİ (Tactical Grid Surface) ---
+        // Kibernetik hərbi dəniz görüntüsü vermək üçün dalğalı bir səth qururuq
+        const gridGeo = new THREE.PlaneGeometry(120, 120, 40, 40);
+        const gridMat = new THREE.MeshBasicMaterial({
+            color: 0x005544,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.25
+        });
+        const seaGrid = new THREE.Mesh(gridGeo, gridMat);
+        seaGrid.rotation.x = -Math.PI / 2;
+        scene.add(seaGrid);
+
+        // --- 4. HƏDƏF (Target Corvette) ---
+        // Qırmızı rəngdə düşmən hədəfi və radar dalğası yaradırıq
+        const targetGroup = new THREE.Group();
+        targetGroup.position.set(15, 0, -15);
+        scene.add(targetGroup);
+
+        const targetGeo = new THREE.BoxGeometry(3, 1.5, 6);
+        const targetMat = new THREE.MeshBasicMaterial({ color: 0xff3333, wireframe: true });
+        const targetMesh = new THREE.Mesh(targetGeo, targetMat);
+        targetGroup.add(targetMesh);
+
+        // Hədəf Radar Halqası (Ölçüsü böyüyən dairə)
+        const radarRingGeo = new THREE.RingGeometry(0.1, 4, 32);
+        const radarRingMat = new THREE.MeshBasicMaterial({ color: 0xff3333, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
+        const radarRing = new THREE.Mesh(radarRingGeo, radarRingMat);
+        radarRing.rotation.x = -Math.PI / 2;
+        radarRing.position.y = 0.1;
+        targetGroup.add(radarRing);
+
+        // --- 5. CODMON DRON SWARM (Dəstə Simulyasiyası) ---
+        const drones = [];
+        const droneCount = 12;
+        const droneGroup = new THREE.Group();
+        scene.add(droneGroup);
+
+        // Dron modeli olaraq kiçik kiber-piramidalar yaradırıq
+        const droneGeo = new THREE.ConeGeometry(0.6, 1.8, 4);
+        droneGeo.rotateX(Math.PI / 2); // İrəli baxması üçün
+
+        for (let i = 0; i < droneCount; i++) {
+            const droneMat = new THREE.MeshBasicMaterial({
+                color: 0x00ffcc,
+                wireframe: true
+            });
+            const drone = new THREE.Mesh(droneGeo, droneMat);
+            
+            // Başlanğıc mövqeyi (Dairəvi düzülüşdə xaotik yayılma)
+            const angle = (i / droneCount) * Math.PI * 2;
+            const radius = 25 + Math.random() * 5;
+            drone.position.set(Math.cos(angle) * radius, 3 + Math.random() * 4, Math.sin(angle) * radius);
+            
+            // Hər drona fərqli sürət və bucaq veririk
+            drone.userData = {
+                angle: angle,
+                speed: 0.005 + Math.random() * 0.008,
+                radius: radius,
+                waveSpeed: 1 + Math.random() * 2,
+                baseY: drone.position.y,
+                id: `CODMON-u${100 + i}`
+            };
+            
+            droneGroup.add(drone);
+            drones.push(drone);
+        }
+
+        // --- 6. LAZER KİLİDLƏMƏ XƏTLƏRİ (Dronlardan Hədəfə) ---
+        const laserLines = [];
+        const lineMat = new THREE.LineBasicMaterial({ color: 0x00ffcc, transparent: true, opacity: 0.4 });
+
+        drones.forEach(drone => {
+            const points = [];
+            points.push(drone.position);
+            points.push(targetGroup.position);
+
+            const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(lineGeo, lineMat);
+            scene.add(line);
+            laserLines.push({ line, drone });
+        });
+
+        // --- 7. İNTERFEYSİN YAXŞILAŞDIRILMASI (Sol Paneldə Dronların Canlı Siyahısı) ---
+        const droneListEl = document.getElementById('drone-list');
+        drones.forEach(d => {
+            const item = document.createElement('div');
+            item.className = "flex justify-between items-center text-xs border border-cyan-500/20 bg-cyan-950/10 p-2 rounded";
+            item.id = `ui-${d.userData.id}`;
+            item.innerHTML = `
+                <span class="font-bold text-white">${d.userData.id}</span>
+                <span class="text-emerald-400 animate-pulse">● FLYING</span>
+                <span class="text-cyan-400 text-[10px]" id="alt-${d.userData.id}">ALT: ${d.position.y.toFixed(1)}m</span>
+            `;
+            droneListEl.appendChild(item);
+        });
+
+        // --- 8. ANİMASİYA VƏ SİMULYASİYA DÖVRÜ ---
+        let clock = new THREE.Clock();
+        let attackMode = false;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+
+            // 1. Dəniz dalğalanması effekti (Grid nöqtələrinin hərəkəti)
+            const pos = seaGrid.geometry.attributes.position;
+            for (let i = 0; i < pos.count; i++) {
+                const u = pos.getX(i);
+                const v = pos.getY(i);
+                // Riyazi dalğa tənliyi
+                const z = Math.sin(u * 0.1 + time) * 0.8 + Math.cos(v * 0.15 + time) * 0.8;
+                pos.setZ(i, z);
+            }
+            pos.needsUpdate = true;
+
+            // 2. Hədəf hərəkəti və Radar animasiyası
+            targetGroup.position.x = 15 + Math.sin(time * 0.2) * 5;
+            targetGroup.position.z = -15 + Math.cos(time * 0.1) * 5;
+            
+            // Radar halqasının böyüməsi
+            radarRing.scale.set(1 + (time % 3) * 1.5, 1 + (time % 3) * 1.5, 1);
+            radarRingMat.opacity = 1.0 - (time % 3) / 3;
+
+            // 3. Dronların hərəkəti (Swarm hərəkəti)
+            drones.forEach(drone => {
+                const ud = drone.userData;
+                
+                if (attackMode) {
+                    // Hücum rejimi: Hərəkət trayektoriyasını hədəfə yaxınlaşdırırıq
+                    ud.radius = THREE.MathUtils.lerp(ud.radius, 12, 0.02);
+                    ud.speed = 0.02; // Sürət artır
+                } else {
+                    // Normal patrul rejimi
+                    ud.radius = THREE.MathUtils.lerp(ud.radius, 25 + Math.sin(time * 0.5) * 3, 0.01);
+                    ud.speed = 0.006;
+                }
+
+                ud.angle += ud.speed;
+                const targetX = Math.cos(ud.angle) * ud.radius;
+                const targetZ = Math.sin(ud.angle) * ud.radius;
+                // Dalğavari uçuş hündürlüyü (Helical path)
+                const targetY = ud.baseY + Math.sin(time * ud.waveSpeed) * 1.2;
+
+                drone.position.set(targetX, targetY, targetZ);
+
+                // Dronun istiqamətini hərəkət etdiyi tərəfə yönəltmək
+                const nextAngle = ud.angle + 0.1;
+                const lookAtTarget = new THREE.Vector3(
+                    Math.cos(nextAngle) * ud.radius,
+                    targetY,
+                    Math.sin(nextAngle) * ud.radius
+                );
+                drone.lookAt(lookAtTarget);
+
+                // UI-da hündürlükləri yeniləyək
+                const altEl = document.getElementById(`alt-${ud.id}`);
+                if (altEl) altEl.innerText = `ALT: ${(targetY * 10).toFixed(0)}m`;
+            });
+
+            // 4. Lazer xətlərinin dinamik olaraq yenilənməsi
+            laserLines.forEach(item => {
+                const points = [];
+                points.push(item.drone.position.clone());
+                points.push(targetGroup.position.clone());
+                item.line.geometry.setFromPoints(points);
+            });
+
+            // 5. İdarəetmə panelindəki kiçik dinamik datalar
+            document.getElementById('live-coords').innerText = 
+                `${(40.4093 + Math.sin(time*0.1)*0.01).toFixed(4)}° N, ${(49.8671 + Math.cos(time*0.1)*0.01).toFixed(4)}° E`;
+            
+            document.getElementById('compass-dir').innerText = 
+                `${Math.floor((time * 10) % 360)}° ${['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.floor(((time * 10) % 360) / 45)]}`;
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Ekran ölçüsü dəyişdikdə 3D səhnəni brauzerə uyğunlaşdırırıq
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // --- 9. İNTERAKTİV DÜYMƏ STRATEGİYALARI ---
+        const logTicker = document.getElementById('log-ticker');
+        
+        function addLog(message) {
+            logTicker.innerText = `>> ${message.toUpperCase()}`;
+        }
+
+        // Hücum düyməsi funksiyası
+        document.getElementById('btn-attack').addEventListener('click', () => {
+            attackMode = !attackMode;
+            const btn = document.getElementById('btn-attack');
+            if (attackMode) {
+                btn.innerText = "STANDBY ATTACK MODE";
+                btn.className = "w-full bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500 text-emerald-400 py-2 text-xs font-bold tracking-wider transition duration-300";
+                lineMat.color.setHex(0xff3333); // Lazerlər qırmızı rəngə çevrilir
+                addLog("ALERT: Swarm locked on Target Corvette-X9! Approaching tactical perimeter.");
+            } else {
+                btn.innerText = "ENGAGE ATTACK MODE";
+                btn.className = "w-full bg-red-600/20 hover:bg-red-600/40 border border-red-500 text-red-400 py-2 text-xs font-bold tracking-wider transition duration-300";
+                lineMat.color.setHex(0x00ffcc); // Lazerlər mavi-yaşıl olur
+                addLog("INFO: Swarm returned to standard patrol and surveillance route.");
+            }
+        });
+
+        // Trayektoriya dəyişmə düyməsi
+        document.getElementById('btn-swarm').addEventListener('click', () => {
+            drones.forEach(d => {
+                d.userData.angle += Math.random() * 2; // Dronların mövqeyini ani dəyişdiririk
+                d.userData.waveSpeed = 1 + Math.random() * 3;
+            });
+            addLog("SWARM PROTOCOL: Re-routing swarm trajectories dynamically.");
+        });
+
+        // Sistem saatı yenilənməsi
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('sys-time').innerText = now.toTimeString().split(' ')[0];
+        }, 1000);
+
+        // İlkin işə salma
+        addLog("SYSTEM INITIALIZED. ALL CODMON UNITS ENGAGED.");
+        animate();
+    </script>
+</body>
+</html>
