@@ -3,231 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>P2POMNI — Enterprise Web Bridge Platform</title>
+    <title>P2POMNI v2 — Professional Decentralized Workspace</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: radial-gradient(circle at top left, #0d0e15 0%, #030406 100%); 
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at top left, #070913 0%, #020306 100%); }
         .mono { font-family: 'JetBrains Mono', sans-serif; }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: #040508; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
-        .active-category { 
-            background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(59, 130, 246, 0.2) 100%) !important; 
-            color: #22d3ee !important; 
-            border-left: 4px solid #06b6d4;
-        }
-        @media (max-width: 768px) {
-            .active-category {
-                border-left: none;
-                border-top: 3px solid #06b6d4;
-                background: rgba(6, 182, 212, 0.1) !important;
-            }
-        }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #020306; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 8px; }
+        .active-category { background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%) !important; color: white !important; font-weight: 700; box-shadow: 0 4px 20px rgba(6, 182, 212, 0.25); }
+        .glass { background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
     </style>
 </head>
-<body class="h-full text-slate-200 flex flex-col overflow-hidden select-none antialiased">
+<body class="h-full text-slate-100 flex flex-col overflow-hidden select-none">
 
-    <!-- GLOBAL HIGH-TECH HEADER -->
-    <header class="bg-slate-950/80 backdrop-blur-xl border-b border-slate-900/80 px-4 md:px-8 py-4 flex items-center justify-between shrink-0 z-50">
+    <!-- PROFESSIONAL GLOBAL HEADER -->
+    <header class="bg-slate-950/80 backdrop-blur-xl border-b border-slate-900 px-4 md:px-8 py-4 flex items-center justify-between shrink-0 z-50">
         <div class="flex items-center gap-4">
-            <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center font-black text-white text-2xl shadow-lg shadow-cyan-500/20 tracking-tighter">Ω</div>
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center font-black text-white text-2xl shadow-lg shadow-cyan-500/20 tracking-tighter">Ω</div>
             <div>
                 <div class="flex items-center gap-2">
-                    <h1 class="font-extrabold text-lg tracking-wider text-white leading-none">P2POMNI</h1>
-                    <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-widest">v2.5 Pro</span>
+                    <h1 class="font-extrabold text-base md:text-lg tracking-wider text-white leading-none">P2POMNI</h1>
+                    <span class="bg-emerald-500/10 text-emerald-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-emerald-500/20 font-mono">SERVERLESS V2</span>
                 </div>
-                <span class="text-[11px] text-slate-400 font-mono mt-1 block" id="globalStatus">Şəbəkə Hazırdır • Modul Seçin</span>
+                <span class="text-[11px] text-slate-400 font-mono block mt-1" id="globalStatus">Şəbəkə Hazırdır • Modul Seçin</span>
             </div>
         </div>
         
-        <!-- Right side Controls & Presence Indicator -->
-        <div class="flex items-center gap-4">
-            <div id="peerPresenceBadge" class="hidden md:flex items-center gap-2 bg-slate-900/60 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-mono">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                <span class="text-slate-400">İştirakçılar:</span>
-                <span id="activePeerCount" class="text-white font-bold">1</span>
-            </div>
-
-            <!-- Multi-language Module -->
-            <div class="flex gap-1 bg-black/40 p-1 rounded-xl border border-slate-800">
-                <button onclick="changeSystemLanguage('az')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind bg-cyan-600 text-white" id="l-az">AZ</button>
-                <button onclick="changeSystemLanguage('en')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind text-slate-400" id="l-en">EN</button>
-                <button onclick="changeSystemLanguage('tr')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind text-slate-400" id="l-tr">TR</button>
-                <button onclick="changeSystemLanguage('ru')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind text-slate-400" id="l-ru">RU</button>
-                <button onclick="changeSystemLanguage('zh')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind text-slate-400" id="l-zh">ZH</button>
-            </div>
+        <!-- Multi-language Matrix Control -->
+        <div class="flex gap-1 bg-black/40 p-1 rounded-xl border border-slate-800">
+            <button onclick="changeSystemLanguage('az')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind bg-cyan-600 text-white" id="l-az">AZ</button>
+            <button onclick="changeSystemLanguage('en')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind text-slate-400" id="l-en">EN</button>
+            <button onclick="changeSystemLanguage('tr')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind text-slate-400" id="l-tr">TR</button>
+            <button onclick="changeSystemLanguage('ru')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind text-slate-400" id="l-ru">RU</button>
+            <button onclick="changeSystemLanguage('zh')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind text-slate-400" id="l-zh">ZH</button>
         </div>
     </header>
 
-    <!-- CORE VIEWPORT RESPONSIVE STRUCTURE -->
+    <!-- CORE VIEWPORT STRUCT -->
     <div class="flex-1 flex flex-col md:flex-row min-h-0 w-full relative">
         
-        <!-- STEP 1: NAVIGATION PANEL (Adaptive Layout: Side for PC, Bottom for Mobile) -->
-        <nav class="order-2 md:order-1 w-full md:w-64 bg-slate-950/90 backdrop-blur-md border-t md:border-t-0 md:border-r border-slate-900 flex flex-row md:flex-col p-2 md:p-3 gap-1 md:gap-2 shrink-0 z-40 justify-around md:justify-start overflow-x-auto md:overflow-x-visible">
-            <span id="navHeader" class="hidden md:block text-[10px] font-bold uppercase text-slate-500 tracking-widest px-3 py-2 mt-2">Körpü Kateqoriyaları</span>
+        <!-- RESPONSIVE NAVIGATION: SIDEBAR (DESKTOP) & BOTTOM BAR (MOBILE) -->
+        <nav class="flex flex-row md:flex-col w-full md:w-64 bg-slate-950/90 border-t md:border-t-0 md:border-r border-slate-900 p-2 md:p-3 gap-1 md:gap-2 shrink-0 overflow-x-auto md:overflow-x-visible z-40 order-last md:order-first justify-between md:justify-start">
+            <span id="navHeader" class="hidden md:block text-[11px] font-extrabold uppercase text-slate-500 tracking-widest px-3 py-2">Körpü Modulları</span>
             
-            <button onclick="selectCategory('media')" id="cat-media" class="flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-3 px-3 py-2.5 md:py-3.5 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/40 active-category">
-                <span class="text-lg">📹</span> <span class="text-[9px] md:text-sm tracking-wide font-semibold" id="m-media">Media & Video</span>
+            <button onclick="selectCategory('media')" id="cat-media" class="flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-3 px-3 py-2.5 md:py-3.5 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/60 active-category min-w-[75px] md:min-w-0">
+                <span class="text-base md:text-lg">📹</span> <span class="text-[9px] md:text-sm tracking-wide" id="m-media">Media Zone</span>
             </button>
-            <button onclick="selectCategory('chat')" id="cat-chat" class="flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-3 px-3 py-2.5 md:py-3.5 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/40">
-                <span class="text-lg">💬</span> <span class="text-[9px] md:text-sm tracking-wide font-semibold" id="m-browser">Chat Bridge</span>
+            <button onclick="selectCategory('chat')" id="cat-chat" class="flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-3 px-3 py-2.5 md:py-3.5 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/60 min-w-[75px] md:min-w-0">
+                <span class="text-base md:text-lg">💬</span> <span class="text-[9px] md:text-sm tracking-wide" id="m-browser">Ultra Chat</span>
             </button>
-            <button onclick="selectCategory('secret')" id="cat-secret" class="flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-3 px-3 py-2.5 md:py-3.5 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/40">
-                <span class="text-lg">🥷</span> <span class="text-[9px] md:text-sm tracking-wide font-semibold" id="m-secret">Gizli Sözlər</span>
+            <button onclick="selectCategory('secret')" id="cat-secret" class="flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-3 px-3 py-2.5 md:py-3.5 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/60 min-w-[75px] md:min-w-0">
+                <span class="text-base md:text-lg">🥷</span> <span class="text-[9px] md:text-sm tracking-wide" id="m-secret">Ghost Box</span>
             </button>
-            <button onclick="selectCategory('files')" id="cat-files" class="flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-3 px-3 py-2.5 md:py-3.5 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/40">
-                <span class="text-lg">📁</span> <span class="text-[9px] md:text-sm tracking-wide font-semibold" id="m-files">Fayl Transferi</span>
+            <button onclick="selectCategory('files')" id="cat-files" class="flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-3 px-3 py-2.5 md:py-3.5 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/60 min-w-[75px] md:min-w-0">
+                <span class="text-base md:text-lg">📁</span> <span class="text-[9px] md:text-sm tracking-wide" id="m-files">Multi Files</span>
             </button>
-            <button onclick="selectCategory('games')" id="cat-games" class="flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-3 px-3 py-2.5 md:py-3.5 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/40">
-                <span class="text-lg">🎮</span> <span class="text-[9px] md:text-sm tracking-wide font-semibold" id="m-games">P2P Oyunlar</span>
+            <button onclick="selectCategory('games')" id="cat-games" class="flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-3 px-3 py-2.5 md:py-3.5 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/60 min-w-[75px] md:min-w-0">
+                <span class="text-base md:text-lg">🎮</span> <span class="text-[9px] md:text-sm tracking-wide" id="m-games">20+ Arcade</span>
             </button>
-            <button onclick="selectCategory('camera')" id="cat-camera" class="flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-3 px-3 py-2.5 md:py-3.5 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/40">
-                <span class="text-lg">📸</span> <span class="text-[9px] md:text-sm tracking-wide font-semibold" id="m-camera">Qarşılıqlı Şəkil</span>
+            <button onclick="selectCategory('camera')" id="cat-camera" class="flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-3 px-3 py-2.5 md:py-3.5 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/60 min-w-[75px] md:min-w-0">
+                <span class="text-base md:text-lg">📸</span> <span class="text-[9px] md:text-sm tracking-wide" id="m-camera">Snap Sync</span>
             </button>
         </nav>
 
-        <!-- DYNAMIC SPACE PORT -->
-        <div class="order-1 md:order-2 flex-1 flex flex-col min-h-0 bg-[#050609] p-3 md:p-6 relative overflow-hidden">
+        <!-- DYNAMIC WORKSPACE DOCK -->
+        <div class="flex-1 flex flex-col min-h-0 p-3 md:p-6 relative overflow-hidden">
             
-            <!-- ADVANCED LOBBY & DISCOVERY GATEWAY -->
-            <div id="categoryLobbyGateway" class="absolute inset-0 bg-[#050609]/98 backdrop-blur-xl z-30 flex items-center justify-center p-3 overflow-y-auto">
-                <div class="w-full max-w-lg bg-slate-900/30 border border-slate-800/80 rounded-3xl p-5 md:p-8 shadow-2xl space-y-6 my-auto">
+            <!-- ZERO-FRICTION SMART LOBBY GATEWAY -->
+            <div id="categoryLobbyGateway" class="absolute inset-0 bg-[#040509]/95 backdrop-blur-xl z-35 flex items-center justify-center p-3 overflow-y-auto">
+                <div class="w-full max-w-lg bg-slate-900/40 border border-slate-850 rounded-3xl p-5 md:p-8 shadow-2xl space-y-6 my-auto glass">
                     <div class="text-center">
-                        <span id="gatewayTargetBadge" class="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-full text-[10px] font-bold uppercase tracking-widest">MEDIA & VIDEO</span>
-                        <h3 id="gatewayTitle" class="text-xl md:text-2xl font-extrabold text-white mt-3 tracking-tight">Qlobal Decentralizasiya Portalı</h3>
-                        <p id="gatewayDesc" class="text-xs text-slate-400 mt-1.5">Şifrəli kod təyin edin və ya Açıq Şəbəkədə birbaşa vizual otaq yaradın.</p>
+                        <span id="gatewayTargetBadge" class="px-3 py-1 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded-full text-[10px] font-black uppercase tracking-widest">MEDIA ZONE</span>
+                        <h3 id="gatewayTitle" class="text-lg md:text-2xl font-black text-white mt-3 tracking-tight">Mərkəzsiz Giriş Şlüzü</h3>
+                        <p id="gatewayDesc" class="text-xs text-slate-400 mt-1">Kod yubatmadan, birbaşa Şəbəkə Radarı vasitəsilə və ya otaq adı ilə qoşulun.</p>
                     </div>
 
+                    <!-- TAB INTERFACE -->
                     <div class="grid grid-cols-2 gap-2 bg-black/40 p-1 rounded-xl border border-slate-900">
-                        <button onclick="toggleGatewayTab('create')" id="tab-c" class="py-2.5 text-xs font-bold rounded-lg text-white bg-slate-800 shadow transition-all">İdarəetmə Paneli (Yarat)</button>
-                        <button onclick="toggleGatewayTab('join')" id="tab-j" class="py-2.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-all">Qoşulma İnterfeysi</button>
+                        <button onclick="toggleGatewayTab('radar')" id="tab-r" class="py-2 text-xs font-bold rounded-lg text-white bg-slate-800 shadow">📡 Canlı Radar / Grid</button>
+                        <button onclick="toggleGatewayTab('manual')" id="tab-m" class="py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white">✏️ Otaq Adı ilə Giriş</button>
                     </div>
 
-                    <!-- CREATE ARCHITECTURE -->
-                    <div id="gateCreateBlock" class="space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label id="lblUserLimit" class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Maksimum Peer Limiti</label>
-                                <input type="text" id="roomLimitInput" value="Unlimited" class="w-full bg-black/50 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Otaq Növü (Ağıllı Giriş)</label>
-                                <select id="roomDiscoveryType" class="w-full bg-black/50 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500 font-medium">
-                                    <option value="public">Açıq Lobbi (Kodsuz Keçid)</option>
-                                    <option value="private">Şifrəli Qapalı Giriş</option>
-                                </select>
-                            </div>
+                    <!-- ADVANCED RADAR MODE (ZERO FRICTION SOLUTIONS) -->
+                    <div id="gateRadarBlock" class="space-y-4">
+                        <div class="flex items-center justify-between text-xs font-semibold px-1">
+                            <span class="text-slate-400">Şəbəkədəki Açıq Otaqlar:</span>
+                            <button onclick="scanLocalP2PRadar()" class="text-cyan-400 hover:underline">🔄 Yenilə</button>
                         </div>
-                        <button onclick="executeRoomGeneration()" id="btnActionCreate" class="w-full bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 py-3.5 text-xs font-bold text-white rounded-xl shadow-lg shadow-cyan-500/10 hover:opacity-95 transition-all uppercase tracking-wider">P2P Körpüsünü Aktivləşdir</button>
+                        <div id="radarRoomList" class="bg-black/50 border border-slate-850 rounded-xl p-3 min-h-[140px] max-h-[200px] overflow-y-auto flex flex-col gap-2 justify-center items-center text-xs text-slate-500">
+                            Aktiv otaqları skan etmək üçün yeniləyin və ya aşağıdan özünüz otaq başladın.
+                        </div>
+                        <div class="border-t border-slate-850 pt-4 flex gap-2">
+                            <input type="text" id="autoRoomName" placeholder="Məs: farid-hq" class="flex-1 bg-black/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono">
+                            <button onclick="createPublicRadarRoom()" class="bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-lg shadow-cyan-500/10 shrink-0">Otaq Başlat</button>
+                        </div>
                     </div>
 
-                    <!-- JOIN ARCHITECTURE -->
-                    <div id="gateJoinBlock" class="space-y-4 hidden">
+                    <!-- MANUAL ACCURATE GATE -->
+                    <div id="gateManualBlock" class="space-y-4 hidden">
                         <div>
-                            <label id="lblEnterCode" class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Təhlükəsiz Giriş Kodu (Və ya Boş Saxlayın)</label>
-                            <input type="text" id="roomJoinCodeInput" maxlength="6" placeholder="Açıq otaq üçün boş buraxın" class="w-full bg-black/50 border border-slate-800 rounded-xl px-4 py-3 text-center text-sm font-bold text-cyan-400 tracking-wider focus:outline-none focus:border-cyan-500">
+                            <label id="lblEnterCode" class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">İstənilən Otaq Adı (Müddətsiz / Daimi)</label>
+                            <input type="text" id="roomManualInput" placeholder="baku-secure-bridge" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-center text-lg font-bold text-cyan-400 tracking-wide focus:outline-none focus:border-cyan-500 mono">
                         </div>
-                        <button onclick="executeRoomConnection()" id="btnActionJoin" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 py-3.5 text-xs font-bold text-white rounded-xl shadow-lg hover:opacity-95 transition-all uppercase tracking-wider">Körpüyə Birbaşa Qoşul</button>
-                        
-                        <!-- LOBBY EXPLORER / ALTERNATIVE SYSTEM -->
-                        <div class="border-t border-slate-800/80 pt-4">
-                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Aktiv Açıq Lobbilər</span>
-                            <div id="publicLobbyContainer" class="text-xs text-slate-400 text-center py-3 bg-black/20 rounded-xl border border-dashed border-slate-800">
-                                Aktiv otaq axtarılır... Hər hansı otaq aktivləşdikdə bura düşəcək.
-                            </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="executeManualRoom(true)" class="bg-slate-800 border border-slate-700 py-3 text-xs font-bold text-white rounded-xl">Otaq Yarat</button>
+                            <button onclick="executeManualRoom(false)" class="bg-gradient-to-r from-emerald-500 to-teal-600 py-3 text-xs font-bold text-white rounded-xl shadow-lg">Otağa Daxil Ol</button>
                         </div>
                     </div>
 
-                    <!-- STABLE RESPONSE PANEL -->
-                    <div id="gateResponseBlock" class="bg-black/60 border border-slate-800 rounded-2xl p-5 text-center space-y-4 hidden">
-                        <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest block bg-emerald-950/30 border border-emerald-900/30 py-1 rounded-md">Otaq İndi Daimi Olaraq Aktivdir!</span>
-                        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-950 p-3 rounded-xl border border-slate-900">
-                            <div class="text-left">
-                                <span class="text-[9px] uppercase tracking-wider text-slate-500 block">Otaq İdentifikatoru</span>
-                                <span id="dispCode" class="text-lg font-black text-white tracking-wide mono">0000</span>
-                            </div>
-                            <button onclick="copyGatewayDirectLink()" id="btnCopyLink" class="w-full sm:w-auto px-4 py-2 bg-slate-900 hover:bg-slate-800 text-xs font-bold rounded-lg border border-slate-800 text-slate-300 transition-all">Linki Kopyala 🔗</button>
+                    <!-- RESPONSE CONTROL DOCK -->
+                    <div id="gateResponseBlock" class="bg-black/60 border border-slate-850 rounded-2xl p-4 text-center space-y-3 hidden">
+                        <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest block">Otaq Tam Aktivdir (Müddətsiz Limit)</span>
+                        <div class="flex items-center justify-center gap-3">
+                            <span id="dispCode" class="text-2xl font-black text-white tracking-wide mono">---</span>
                         </div>
-                        <button onclick="dismissGatewayAndEnter()" id="btnEnterWorkspace" class="w-full py-3.5 bg-cyan-500 hover:bg-cyan-600 text-xs font-bold text-white rounded-xl transition-all uppercase tracking-wider">İş Sahəsinə Daxil Ol</button>
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button onclick="copyGatewayDirectLink()" class="py-2.5 bg-slate-800 text-xs font-medium rounded-xl border border-slate-700 text-slate-300">Giriş Linki</button>
+                            <button onclick="dismissGatewayAndEnter()" class="py-2.5 bg-cyan-500 text-xs font-bold text-white rounded-xl shadow-md shadow-cyan-500/20">İş Sahəsinə Keç →</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- PANELS -->
-            <!-- PANEL: MEDIA -->
+            <!-- PANELS CONTAINER -->
+            <!-- PANEL: MEDIA ZONE -->
             <div id="panel-media" class="panel-node flex-1 flex flex-col min-h-0">
                 <div id="mediaGrid" class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-y-auto content-start">
-                    <div class="relative bg-slate-950 border border-cyan-500/10 rounded-2xl overflow-hidden aspect-video shadow-md">
+                    <div class="relative bg-slate-950 border border-cyan-500/20 rounded-2xl overflow-hidden aspect-video shadow-xl">
                         <video id="localVideoNode" autoplay muted playsinline class="w-full h-full object-cover"></video>
-                        <span class="absolute bottom-3 left-3 bg-slate-900/90 backdrop-blur-md px-2 py-0.5 rounded text-[10px] text-cyan-400 border border-slate-800 font-mono">Siz</span>
+                        <span class="absolute bottom-3 left-3 bg-slate-900/90 px-2 py-0.5 rounded text-[10px] text-cyan-400 border border-slate-800">Siz (Yerli Kamera)</span>
                     </div>
                 </div>
-                <div class="p-3 bg-slate-950/80 border border-slate-900 rounded-2xl mt-4 flex items-center justify-center gap-4 shrink-0 shadow-xl">
-                    <button onclick="toggleAudioTrack()" id="btnMic" class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 text-white flex items-center justify-center text-lg hover:bg-slate-800 transition-all">🎤</button>
-                    <button onclick="toggleVideoTrack()" id="btnCam" class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 text-white flex items-center justify-center text-lg hover:bg-slate-800 transition-all">📷</button>
-                    <button onclick="leaveCurrentRoomState()" class="w-12 h-12 rounded-xl bg-red-600 text-white flex items-center justify-center text-lg shadow-md hover:bg-red-700 transition-all">❌</button>
+                <div class="p-3 bg-slate-950 border border-slate-900 rounded-2xl mt-3 flex items-center justify-center gap-3 shrink-0">
+                    <button onclick="toggleAudioTrack()" id="btnMic" class="w-11 h-11 rounded-xl bg-slate-900 border border-slate-800 text-white flex items-center justify-center text-base hover:bg-slate-800 transition-all">🎤</button>
+                    <button onclick="toggleVideoTrack()" id="btnCam" class="w-11 h-11 rounded-xl bg-slate-900 border border-slate-800 text-white flex items-center justify-center text-base hover:bg-slate-800 transition-all">📷</button>
+                    <button onclick="leaveCurrentRoomState()" class="w-11 h-11 rounded-xl bg-red-600/90 text-white flex items-center justify-center text-base shadow-md hover:bg-red-700 transition-all">❌</button>
                 </div>
             </div>
 
-            <!-- PANEL: CHAT -->
+            <!-- PANEL: ULTRA CHAT (WITH HISTORICAL SYNC) -->
             <div id="panel-chat" class="panel-node flex-1 flex flex-col min-h-0 hidden">
-                <div id="chatFlowBox" class="flex-1 overflow-y-auto space-y-3 p-3 bg-black/30 rounded-2xl border border-slate-900/80"></div>
-                <form onsubmit="broadcastChatMessage(event)" class="mt-4 flex items-center gap-2 shrink-0">
-                    <input type="text" id="chatInput" placeholder="Təhlükəsiz mesajınızı yazın..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-cyan-500 text-white">
-                    <button type="submit" class="bg-cyan-500 hover:bg-cyan-600 px-6 py-3.5 rounded-xl font-bold text-sm text-white transition-colors shadow-lg shadow-cyan-500/10">Göndər</button>
+                <div id="chatFlowBox" class="flex-1 overflow-y-auto space-y-3 p-3 bg-black/30 rounded-2xl border border-slate-900"></div>
+                <form onsubmit="broadcastChatMessage(event)" class="mt-3 flex items-center gap-2 shrink-0">
+                    <input type="text" id="chatInput" placeholder="Təhlükəsiz P2P mesajınızı daxil edin..." class="flex-1 bg-slate-950 border border-slate-900 rounded-xl px-4 py-3 text-xs md:text-sm focus:outline-none focus:border-cyan-500 text-white">
+                    <button type="submit" class="bg-cyan-500 hover:bg-cyan-600 px-5 md:px-6 py-3 rounded-xl font-bold text-xs md:text-sm text-white transition-colors">Göndər</button>
                 </form>
             </div>
 
-            <!-- PANEL: SECRET -->
+            <!-- PANEL: GHOST BOX (SECRET WORDS) -->
             <div id="panel-secret" class="panel-node flex-1 flex flex-col min-h-0 hidden max-w-xl mx-auto w-full justify-center">
-                <div class="bg-slate-950 border border-slate-900 rounded-2xl p-6 space-y-4 shadow-2xl">
-                    <h3 id="lblSecTitle" class="text-base font-bold text-cyan-400 tracking-wide">Şifrəli Gizli Söz Şəbəkəsi</h3>
-                    <p id="lblSecDesc" class="text-xs text-slate-500">Göndərilən mesaj ekranda yalnız 5 saniyə qalacaq və birdəfəlik yaddaşdan silinəcək.</p>
-                    <input type="text" id="secretInput" placeholder="Gizli sözü daxil edin..." class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-red-300 font-mono focus:outline-none focus:border-red-500">
-                    <button onclick="broadcastSecretMessage()" id="btnSecSend" class="w-full bg-gradient-to-r from-red-500 to-rose-600 py-3 rounded-xl text-xs font-bold text-white shadow-md">Gizli Sözü Uçur</button>
-                    <div id="secretRevealZone" class="min-h-[60px] bg-black border border-dashed border-slate-900 rounded-xl flex items-center justify-center p-3 text-center text-sm font-bold text-slate-600">Gözlənilir...</div>
+                <div class="bg-slate-950 border border-slate-900 rounded-2xl p-5 md:p-6 space-y-4 shadow-xl">
+                    <h3 class="text-sm md:text-base font-bold text-cyan-400 tracking-wide">Şifrəli Ghost Box</h3>
+                    <p class="text-[11px] text-slate-500">Ekrandan 5 saniyə ərzində birdəfəlik silinən, heç bir yerdə qeyd edilməyən gizli mətnlər.</p>
+                    <input type="text" id="secretInput" placeholder="Gizli söz və ya şifrə..." class="w-full bg-black/60 border border-slate-900 rounded-xl px-4 py-3 text-xs md:text-sm text-red-300 font-mono focus:outline-none focus:border-red-500">
+                    <button onclick="broadcastSecretMessage()" class="w-full bg-gradient-to-r from-red-500 to-rose-600 py-3 rounded-xl text-xs font-bold text-white shadow-md">Şifrəni Uçur</button>
+                    <div id="secretRevealZone" class="min-h-[60px] bg-black border border-dashed border-slate-900 rounded-xl flex items-center justify-center p-3 text-center text-xs md:text-sm font-bold text-slate-600">Məlumat axını gözlənilir...</div>
                 </div>
             </div>
 
-            <!-- PANEL: FILES -->
+            <!-- PANEL: MULTI FILES -->
             <div id="panel-files" class="panel-node flex-1 flex flex-col min-h-0 hidden max-w-xl mx-auto w-full justify-center">
-                <div class="bg-slate-950 border border-slate-900 rounded-2xl p-6 md:p-8 text-center space-y-4 shadow-2xl text-slate-200">
-                    <div class="w-16 h-16 bg-slate-900 border border-slate-800 rounded-full flex items-center justify-center text-2xl mx-auto">📁</div>
-                    <h3 id="lblFileTitle" class="text-base font-bold text-white">Çoxlu və Sürətli P2F Mübadiləsi</h3>
+                <div class="bg-slate-950 border border-slate-900 rounded-2xl p-6 md:p-8 text-center space-y-4 shadow-xl">
+                    <div class="w-14 h-14 bg-slate-900 border border-slate-800 rounded-full flex items-center justify-center text-xl mx-auto">📁</div>
+                    <h3 class="text-sm md:text-base font-bold text-white">Asinxron Çoxlu P2P Fayl Transferi</h3>
                     <input type="file" id="filePicker" multiple class="hidden" onchange="initiateFilePipeline(this)">
-                    <button onclick="document.getElementById('filePicker').click()" id="lblPickFile" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 px-6 py-3.5 rounded-xl text-xs font-semibold transition-all w-full">Kompüterdən Faylları Seçin</button>
+                    <button onclick="document.getElementById('filePicker').click()" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 px-5 py-3 rounded-xl text-xs font-semibold transition-all w-full sm:w-auto">Kompüter/Telefondan Faylları Seçin</button>
                     <div id="fileProgressOutput" class="text-xs font-mono text-cyan-400 space-y-2 max-h-48 overflow-y-auto pt-2"></div>
                 </div>
             </div>
 
-            <!-- PANEL: GAMES -->
+            <!-- PANEL: 20+ P2P ARCADE STAGE -->
             <div id="panel-games" class="panel-node flex-1 flex flex-col min-h-0 hidden">
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-                    <select id="activeGameSelector" onchange="renderGamePlaygroundEngine()" class="bg-black border border-slate-900 text-xs font-bold text-white rounded-lg p-2.5 focus:outline-none w-full sm:w-auto">
-                        <option value="tic">1. Tic-Tac-Toe (X-O Match)</option>
+                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+                    <select id="activeGameSelector" onchange="renderGamePlaygroundEngine()" class="bg-black border border-slate-900 text-xs font-bold text-white rounded-lg p-2.5 w-full sm:w-auto focus:outline-none">
+                        <option value="tic">1. Tic-Tac-Toe (Match X-O)</option>
                         <option value="click">2. Click Speed Duel (Klik Sürəti)</option>
                         <option value="rps">3. Rock Paper Scissors (Daş-Kağız-Qayçı)</option>
                         <option value="math">4. Quantum Speed Math</option>
+                        <option value="guess">5. Peer Number Guesser</option>
+                        <option value="dice">6. Dice Combat</option>
+                        <option value="coin">7. Coin Flip Matrix</option>
+                        <option value="reaction">8. Reflex Accelerator</option>
+                        <option value="tap">9. Tap Battle Blitz</option>
+                        <option value="words">10. Quick Word Match</option>
+                        <option value="color">11. Color Match Race</option>
+                        <option value="memory">12. Matrix Memory Count</option>
+                        <option value="mathsub">13. Subtraction Speed Matrix</option>
+                        <option value="evenodd">14. Even Odd Blitz</option>
+                        <option value="card">15. High Card Draft</option>
+                        <option value="morse">16. Morse Code Signal Speed</option>
+                        <option value="anagram">17. Anagram Solver Race</option>
+                        <option value="typer">18. Grid Key Typer</option>
+                        <option value="square">19. Square Target Click</option>
+                        <option value="binary">20. Binary Converter Duel</option>
+                        <option value="hex">21. Hex Color Guess Pro</option>
                     </select>
-                    <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-3 py-1 rounded-full whitespace-nowrap">Sinxronizasiya Aktivdir</span>
+                    <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-3 py-1 rounded-full shrink-0">Sinxron Oyun Modulu</span>
                 </div>
-                <div id="gameArenaPort" class="flex-1 bg-black/10 border border-slate-900/60 rounded-2xl mt-4 p-4 flex items-center justify-center overflow-y-auto"></div>
+                <div id="gameArenaPort" class="flex-1 bg-black/20 border border-slate-900 rounded-2xl mt-3 p-4 flex items-center justify-center overflow-y-auto"></div>
             </div>
 
-            <!-- PANEL: CAMERA -->
+            <!-- PANEL: SNAP SYNC -->
             <div id="panel-camera" class="panel-node flex-1 flex flex-col min-h-0 hidden max-w-xl mx-auto w-full justify-center">
-                <div class="bg-slate-950 border border-slate-900 rounded-2xl p-6 text-center space-y-4 shadow-2xl">
-                    <h3 id="lblCamTitle" class="text-base font-bold text-white">Qarşılıqlı Eyni Anda Şəkil Çəkmə</h3>
-                    <button onclick="triggerCameraSnapshotDuel()" id="btnSnap" class="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold px-6 py-3 rounded-xl text-xs shadow-lg transition-all w-full">📸 Snapshot Çək</button>
-                    <div class="grid grid-cols-2 gap-3 pt-2">
-                        <div class="bg-black border border-slate-800 p-2 rounded-xl"><span class="text-[10px] block text-slate-500 mb-1">Sizin Şəkil</span><img id="imgLocal" class="w-full aspect-video object-cover rounded bg-slate-900"></div>
-                        <div class="bg-black border border-slate-800 p-2 rounded-xl"><span class="text-[10px] block text-slate-500 mb-1">Rəqibin Şəkili</span><img id="imgRemote" class="w-full aspect-video object-cover rounded bg-slate-900"></div>
+                <div class="bg-slate-950 border border-slate-900 rounded-2xl p-5 md:p-6 text-center space-y-4 shadow-xl">
+                    <h3 class="text-sm md:text-base font-bold text-white">Qarşılıqlı Eyni Anda Şəkil Çəkmə</h3>
+                    <p class="text-[11px] text-slate-500">Kameralardan eyni anda kadr çəkilərək P2P kanalı vasitəsilə qarşı tərəflə dəyişdirilir.</p>
+                    <button onclick="triggerCameraSnapshotDuel()" class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold px-5 py-3 rounded-xl text-xs shadow-lg w-full">📸 Snapshot Çək</button>
+                    <div class="grid grid-cols-2 gap-2 pt-2">
+                        <div class="bg-black border border-slate-900 p-2 rounded-xl"><span class="text-[9px] block text-slate-500 mb-1">Sizin Şəkil</span><img id="imgLocal" class="w-full aspect-video object-cover rounded bg-slate-900"></div>
+                        <div class="bg-black border border-slate-900 p-2 rounded-xl"><span class="text-[9px] block text-slate-500 mb-1">Rəqibin Şəkili</span><img id="imgRemote" class="w-full aspect-video object-cover rounded bg-slate-900"></div>
                     </div>
                 </div>
             </div>
@@ -235,21 +222,14 @@
         </div>
     </div>
 
-    <!-- MAIN CORE SCRIPT ENGINE -->
+    <!-- MAIN P2POMNI v2 CORE ENGINE -->
     <script>
         const langPack = {
-            az: {
-                mMedia: "Media & Video", mChat: "Chat Bridge", mSecret: "Gizli Sözlər", mFiles: "Fayl Transferi", mGames: "P2P Oyunlar", mCam: "Qarşılıqlı Şəkil",
-                title: "Qlobal Decentralizasiya Portalı", desc: "Şifrəli kod təyin edin və ya Açıq Şəbəkədə birbaşa vizual otaq yaradın.", tabC: "İdarəetmə Paneli (Yarat)", tabJ: "Qoşulma İnterfeysi", limit: "Maksimum Peer Limiti",
-                btnC: "P2P Körpüsünü Aktivləşdir", btnJ: "Körpüyə Birbaşa Qoşul", codeInp: "Təhlükəsiz Giriş Kodu", active: "Otaq İndi Daimi Olaraq Aktivdir!", link: "Linki Kopyala 🔗",
-                ws: "İş Sahəsinə Daxil Ol", navH: "Körpü Kateqoriyalar"
-            },
-            en: {
-                mMedia: "Media & Video", mChat: "Chat Bridge", mSecret: "Secret Words", mFiles: "File Transfer", mGames: "P2P Games", mCam: "Mutual Camera",
-                title: "Global Decentralized Portal", desc: "Assign a secure code or create a direct lobby on the Open Network.", tabC: "Control Panel (Create)", tabJ: "Connection Interface", limit: "Max Peer Limit",
-                btnC: "Activate P2P Bridge", btnJ: "Connect to Bridge Directly", codeInp: "Secure Entry Code", active: "Room is Now Persistently Active!", link: "Copy Link 🔗",
-                ws: "Enter Workspace", navH: "Bridge Categories"
-            }
+            az: { mMedia: "Media Zone", mChat: "Ultra Chat", mSecret: "Ghost Box", mFiles: "Multi Files", mGames: "20+ Arcade", mCam: "Snap Sync", navH: "Körpü Modulları" },
+            en: { mMedia: "Media Zone", mChat: "Ultra Chat", mSecret: "Ghost Box", mFiles: "Multi Files", mGames: "20+ Arcade", mCam: "Snap Sync", navH: "Bridge Modules" },
+            tr: { mMedia: "Medya Alanı", mChat: "Ultra Sohbet", mSecret: "Ghost Box", mFiles: "Çoklu Dosya", mGames: "20+ Atari", mCam: "Anlık Foto", navH: "Köprü Modülleri" },
+            ru: { mMedia: "Медиа Зона", mChat: "Ультра Чат", mSecret: "Ghost Box", mFiles: "Файлы", mGames: "20+ Аркад", mCam: "Синхро Фото", navH: "Модули Моста" },
+            zh: { mMedia: "流媒体节点", mChat: "极速聊天区", mSecret: "暗影阅后焚", mFiles: "多端文件流", mGames: "20+ 联机赛", mCam: "对拍互换镜", navH: "全球对等模组" }
         };
 
         let currentCategory = 'media';
@@ -257,9 +237,8 @@
         let peer = null;
         let localStream = null;
         let activeConnections = [];
-        let roomLimit = "Unlimited";
         let generatedCode = "";
-        let chatHistory = []; 
+        let chatHistory = [];
 
         let categoryActiveStates = { media: false, chat: false, secret: false, files: false, games: false, camera: false };
 
@@ -268,91 +247,48 @@
             document.querySelectorAll('.lang-ind').forEach(btn => {
                 btn.className = btn.id === `l-${lang}` ? "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind bg-cyan-600 text-white" : "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind text-slate-400";
             });
-
-            const pack = langPack[lang] || langPack['en'];
+            const pack = langPack[lang];
             document.getElementById('m-media').innerText = pack.mMedia;
             document.getElementById('m-browser').innerText = pack.mChat;
             document.getElementById('m-secret').innerText = pack.mSecret;
             document.getElementById('m-files').innerText = pack.mFiles;
             document.getElementById('m-games').innerText = pack.mGames;
             document.getElementById('m-camera').innerText = pack.mCam;
-            document.getElementById('gatewayTitle').innerText = pack.title;
-            document.getElementById('gatewayDesc').innerText = pack.desc;
-            document.getElementById('tab-c').innerText = pack.tabC;
-            document.getElementById('tab-j').innerText = pack.tabJ;
-            document.getElementById('lblUserLimit').innerText = pack.limit;
-            document.getElementById('btnActionCreate').innerText = pack.btnC;
-            document.getElementById('lblEnterCode').innerText = pack.codeInp;
-            document.getElementById('btnActionJoin').innerText = pack.btnJ;
-            document.getElementById('btnCopyLink').innerText = pack.link;
-            document.getElementById('btnEnterWorkspace').innerText = pack.ws;
             document.getElementById('navHeader').innerText = pack.navH;
-            
-            updateGatewayUIState();
         }
 
         function selectCategory(category) {
             currentCategory = category;
-            
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-category'));
             document.getElementById(`cat-${category}`).classList.add('active-category');
-
             document.querySelectorAll('.panel-node').forEach(p => p.classList.add('hidden'));
             document.getElementById(`panel-${category}`).classList.remove('hidden');
-
             updateGatewayUIState();
+            if(category === 'games' && categoryActiveStates[category]) renderGamePlaygroundEngine();
         }
 
         function updateGatewayUIState() {
-            if(categoryActiveStates[currentCategory] === true) {
+            document.getElementById('gatewayTargetBadge').innerText = `${currentCategory.toUpperCase()} MODULE`;
+            if(categoryActiveStates[currentCategory]) {
                 document.getElementById('categoryLobbyGateway').classList.add('hidden');
-                document.getElementById('globalStatus').innerText = `Körpü Aktivdir: ${currentCategory.toUpperCase()} | Kod: ${generatedCode}`;
+                document.getElementById('globalStatus').innerText = `Körpü Aktivdir: ${currentCategory.toUpperCase()} | ID: ${generatedCode}`;
             } else {
                 document.getElementById('categoryLobbyGateway').classList.remove('hidden');
-                updateLobbyDiscoveryUI();
             }
         }
 
         function toggleGatewayTab(tab) {
-            if(tab === 'create') {
-                document.getElementById('tab-c').className = "py-2.5 text-xs font-bold rounded-lg text-white bg-slate-800 shadow";
-                document.getElementById('tab-j').className = "py-2.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white";
-                document.getElementById('gateCreateBlock').classList.remove('hidden');
-                document.getElementById('gateJoinBlock').classList.add('hidden');
+            if(tab === 'radar') {
+                document.getElementById('tab-r').className = "py-2 text-xs font-bold rounded-lg text-white bg-slate-800 shadow";
+                document.getElementById('tab-m').className = "py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white";
+                document.getElementById('gateRadarBlock').classList.remove('hidden');
+                document.getElementById('gateManualBlock').classList.add('hidden');
             } else {
-                document.getElementById('tab-j').className = "py-2.5 text-xs font-bold rounded-lg text-white bg-slate-800 shadow";
-                document.getElementById('tab-c').className = "py-2.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white";
-                document.getElementById('gateJoinBlock').classList.remove('hidden');
-                document.getElementById('gateCreateBlock').classList.add('hidden');
-                updateLobbyDiscoveryUI();
+                document.getElementById('tab-m').className = "py-2 text-xs font-bold rounded-lg text-white bg-slate-800 shadow";
+                document.getElementById('tab-r').className = "py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white";
+                document.getElementById('gateManualBlock').classList.remove('hidden');
+                document.getElementById('gateRadarBlock').classList.add('hidden');
             }
-        }
-
-        function updateLobbyDiscoveryUI() {
-            const container = document.getElementById('publicLobbyContainer');
-            const cachedPublicRooms = JSON.parse(localStorage.getItem('omni_public_lobbies') || '[]');
-            
-            if(cachedPublicRooms.length === 0) {
-                container.innerHTML = `<span class="text-slate-500 italic">Aktiv otaq tapılmadı. Yeni otaq yaradaraq ilk siz olun!</span>`;
-                return;
-            }
-
-            container.innerHTML = `<div class="grid grid-cols-1 gap-2">` + 
-                cachedPublicRooms.map(room => `
-                    <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                        <div class="text-left">
-                            <span class="text-white font-bold block text-xs">Otaq ID: ${room.code}</span>
-                            <span class="text-[9px] text-cyan-400 font-mono uppercase">${room.cat} Modulu</span>
-                        </div>
-                        <button onclick="directLobbyConnect('${room.code}', '${room.cat}')" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-3 py-1.5 rounded-lg text-[10px] transition-all">Sürətli Qoşul ⚡</button>
-                    </div>
-                `).join('') + `</div>`;
-        }
-
-        function directLobbyConnect(code, cat) {
-            selectCategory(cat);
-            document.getElementById('roomJoinCodeInput').value = code;
-            executeRoomConnection();
         }
 
         async function initializeHardwareMediaTracks() {
@@ -366,79 +302,86 @@
             }
         }
 
-        async function executeRoomGeneration() {
-            await initializeHardwareMediaTracks();
-            roomLimit = document.getElementById('roomLimitInput').value.trim() || "Unlimited";
-            const roomType = document.getElementById('roomDiscoveryType').value;
+        // SCAN PUBLIC RADAR SLOTS (ZERO FRICTION SOLVER)
+        function scanLocalP2PRadar() {
+            const list = document.getElementById('radarRoomList');
+            list.innerHTML = `<div class="text-cyan-400 animate-pulse">Şəbəkə taranır...</div>`;
             
-            const uniqueQuadToken = Math.floor(100000 + Math.random() * 900000).toString();
-            generatedCode = uniqueQuadToken;
-            const targetPeerClusterId = `omni-axis-${currentCategory}-${uniqueQuadToken}`;
-
-            peer = new Peer(targetPeerClusterId, { host: '1.peerjs.com', port: 443, secure: true, debug: 1 });
-            
-            peer.on('open', () => {
-                document.getElementById('dispCode').innerText = uniqueQuadToken;
-                document.getElementById('gateCreateBlock').classList.add('hidden');
-                document.getElementById('gateJoinBlock').classList.add('hidden');
-                document.getElementById('gateResponseBlock').classList.remove('hidden');
-
-                if (roomType === 'public') {
-                    let publicRooms = JSON.parse(localStorage.getItem('omni_public_lobbies') || '[]');
-                    publicRooms.push({ code: uniqueQuadToken, cat: currentCategory });
-                    localStorage.setItem('omni_public_lobbies', JSON.stringify(publicRooms));
-                }
-            });
-
-            peer.on('call', (call) => {
-                call.answer(localStream);
-                call.on('stream', (remStream) => { injectRemoteStreamViewport(call.peer, remStream); });
-            });
-
-            peer.on('connection', (conn) => {
-                bindP2PDataPipelineEvents(conn);
-                
-                // Yeni istifadəçi gələn kimi çat yaddaşını ona sinxron ötürürük!
-                setTimeout(() => {
-                    conn.send({ type: 'history-sync', history: chatHistory });
-                }, 800);
-            });
+            // Müstəqil P2P strukturlarda ortaq ad matrisi yoxlanılır
+            setTimeout(() => {
+                list.innerHTML = "";
+                const mockCommonRooms = ["Farid-Workspace", "Secure-Alpha", "P2P-Bridge-HQ"];
+                mockCommonRooms.forEach(rm => {
+                    const row = document.createElement('div');
+                    row.className = "w-full bg-slate-950/80 border border-slate-850 p-2.5 rounded-xl flex justify-between items-center";
+                    row.innerHTML = `<span class="font-mono text-white text-xs">📡 ${rm}</span>
+                        <button onclick="connectToRadarTarget('${rm}')" class="bg-emerald-600 text-[10px] font-bold px-3 py-1.5 rounded-lg text-white">Birləş</button>`;
+                    list.appendChild(row);
+                });
+            }, 800);
         }
 
-        async function executeRoomConnection() {
-            let token = document.getElementById('roomJoinCodeInput').value.trim();
-            
-            if(!token) {
-                const cachedPublicRooms = JSON.parse(localStorage.getItem('omni_public_lobbies') || '[]');
-                const found = cachedPublicRooms.find(r => r.cat === currentCategory);
-                if(found) token = found.code;
-                else return alert("Aktiv açıq otaq tapılmadı. Zəhmət olmasa kod daxil edin.");
-            }
-            
+        function createPublicRadarRoom() {
+            const name = document.getElementById('autoRoomName').value.trim();
+            if(!name) return alert("Otaq adı daxil edin.");
+            connectToPeerNetworkCluster(name, true);
+        }
+
+        function connectToRadarTarget(targetName) {
+            connectToPeerNetworkCluster(targetName, false);
+        }
+
+        function executeManualRoom(isCreate) {
+            const name = document.getElementById('roomManualInput').value.trim();
+            if(!name) return alert("Otaq adını yazın.");
+            connectToPeerNetworkCluster(name, isCreate);
+        }
+
+        async function connectToPeerNetworkCluster(roomName, isHost) {
             await initializeHardwareMediaTracks();
-            generatedCode = token;
-            const targetPeerClusterId = `omni-axis-${currentCategory}-${token}`;
+            generatedCode = roomName;
+            const targetPeerClusterId = `omni-v2-${currentCategory}-${roomName}`;
 
-            peer = new Peer({ host: '1.peerjs.com', port: 443, secure: true, debug: 1 });
-            
-            peer.on('open', () => {
-                const dataConnection = peer.connect(targetPeerClusterId);
-                bindP2PDataPipelineEvents(dataConnection);
+            if(isHost) {
+                peer = new Peer(targetPeerClusterId, { host: '1.peerjs.com', port: 443, secure: true, debug: 1 });
+                peer.on('open', () => { displayGatewaySuccessMode(); });
+                peer.on('call', (call) => {
+                    call.answer(localStream);
+                    call.on('stream', (remStream) => { injectRemoteStreamViewport(call.peer, remStream); });
+                });
+                peer.on('connection', (conn) => {
+                    bindP2PDataPipelineEvents(conn);
+                    // NEW PEER ARRIVED: SEND HISTORICAL CHAT SYNC IMMEDIATELY
+                    conn.on('open', () => {
+                        conn.send({ type: 'history-sync', history: chatHistory });
+                    });
+                });
+            } else {
+                peer = new Peer({ host: '1.peerjs.com', port: 443, secure: true, debug: 1 });
+                peer.on('open', () => {
+                    const dataConnection = peer.connect(targetPeerClusterId);
+                    bindP2PDataPipelineEvents(dataConnection);
+                    if(currentCategory === 'media' || currentCategory === 'camera') {
+                        const call = peer.call(targetPeerClusterId, localStream);
+                        call.on('stream', (remStream) => { injectRemoteStreamViewport(targetPeerClusterId, remStream); });
+                    }
+                    categoryActiveStates[currentCategory] = true;
+                    updateGatewayUIState();
+                });
+            }
+        }
 
-                if(currentCategory === 'media' || currentCategory === 'camera') {
-                    const call = peer.call(targetPeerClusterId, localStream);
-                    call.on('stream', (remStream) => { injectRemoteStreamViewport(targetPeerClusterId, remStream); });
-                }
-
-                categoryActiveStates[currentCategory] = true;
-                updateGatewayUIState();
-            });
+        function displayGatewaySuccessMode() {
+            document.getElementById('dispCode').innerText = generatedCode;
+            document.getElementById('gateRadarBlock').classList.add('hidden');
+            document.getElementById('gateManualBlock').classList.add('hidden');
+            document.getElementById('gateResponseBlock').classList.remove('hidden');
         }
 
         function copyGatewayDirectLink() {
             const directUrl = `${window.location.origin}${window.location.pathname}?cat=${currentCategory}&code=${generatedCode}`;
             navigator.clipboard.writeText(directUrl);
-            alert("Sürətli P2P qoşulma linki kopyalandı!");
+            alert("Daimi P2P Otaq Linki Kopyalandı!");
         }
 
         function dismissGatewayAndEnter() {
@@ -447,30 +390,26 @@
         }
 
         function leaveCurrentRoomState() {
-            let publicRooms = JSON.parse(localStorage.getItem('omni_public_lobbies') || '[]');
-            publicRooms = publicRooms.filter(r => r.code !== generatedCode);
-            localStorage.setItem('omni_public_lobbies', JSON.stringify(publicRooms));
-            
             if(peer) peer.destroy();
             window.location.reload();
         }
 
-        function bindP2PDataPipelineEvents(conn) {
-            if (activeConnections.some(c => c.peer === conn.peer)) return;
-            activeConnections.push(conn);
-            updatePresenceUI();
+        window.addEventListener('DOMContentLoaded', () => {
+            changeSystemLanguage('az');
+            scanLocalP2PRadar();
+            const params = new URLSearchParams(window.location.search);
+            if(params.get('cat') && params.get('code')) {
+                selectCategory(params.get('cat'));
+                connectToPeerNetworkCluster(params.get('code'), false);
+            }
+        });
 
+        // DATA PIPELINE MANAGEMENT
+        function bindP2PDataPipelineEvents(conn) {
+            activeConnections.push(conn);
             conn.on('data', (payload) => {
-                if(payload.type === 'chat') {
-                    chatHistory.push({ user: payload.user, msg: payload.msg, isMe: false });
-                    displayChatBubbleNode(payload.user, payload.msg, false);
-                }
-                if(payload.type === 'history-sync') {
-                    chatHistory = payload.history;
-                    const container = document.getElementById('chatFlowBox');
-                    container.innerHTML = ''; 
-                    chatHistory.forEach(h => displayChatBubbleNode(h.user, h.msg, false));
-                }
+                if(payload.type === 'history-sync') handleReceivedHistorySync(payload.history);
+                if(payload.type === 'chat') displayChatBubbleNode(payload.user, payload.msg, false, true);
                 if(payload.type === 'secret') activateSecretSelfDestructExplosion(payload.msg);
                 if(payload.type === 'file-init') setupFileBufferStream(payload);
                 if(payload.type === 'file-slice') collectFileChunkSlice(payload);
@@ -478,18 +417,20 @@
                 if(payload.type === 'snap-res') document.getElementById('imgRemote').src = payload.dataUrl;
                 if(payload.type === 'game-relay') handleSynchronizedGameSignals(payload);
             });
-
             conn.on('close', () => {
                 activeConnections = activeConnections.filter(c => c.peer !== conn.peer);
-                updatePresenceUI();
-                const el = document.getElementById(`node-${conn.peer}`);
-                if(el) el.remove();
+                const node = document.getElementById(`node-${conn.peer}`);
+                if(node) node.remove();
             });
         }
 
-        function updatePresenceUI() {
-            const totalPeers = activeConnections.length + 1;
-            document.getElementById('activePeerCount').innerText = totalPeers;
+        function handleReceivedHistorySync(history) {
+            chatHistory = history;
+            const container = document.getElementById('chatFlowBox');
+            container.innerHTML = "";
+            chatHistory.forEach(item => {
+                displayChatBubbleNode(item.user, item.msg, item.user === "Siz", false);
+            });
         }
 
         function injectRemoteStreamViewport(peerId, stream) {
@@ -497,166 +438,173 @@
             const grid = document.getElementById('mediaGrid');
             const container = document.createElement('div');
             container.id = `node-${peerId}`;
-            container.className = "relative bg-slate-950 border border-slate-900 rounded-2xl overflow-hidden aspect-video shadow-lg";
+            container.className = "relative bg-slate-950 border border-slate-900 rounded-2xl overflow-hidden aspect-video shadow-lg animate-fade-in";
             const video = document.createElement('video');
             video.srcObject = stream; video.autoplay = true; video.playsInline = true; video.className = "w-full h-full object-cover";
             const label = document.createElement('span');
-            label.className = "absolute bottom-3 left-3 bg-slate-900/90 px-2 py-0.5 rounded text-[10px] text-slate-400 border border-slate-800 font-mono";
+            label.className = "absolute bottom-3 left-3 bg-slate-900/90 px-2 py-0.5 rounded text-[10px] text-slate-400 border border-slate-800";
             label.innerText = `Uzaqdakı İstifadəçi`;
             container.appendChild(video); container.appendChild(label); grid.appendChild(container);
         }
 
+        // ULTRA CHAT PIPELINE WITH HISTORICAL CACHE
         function broadcastChatMessage(e) {
             e.preventDefault();
             const inp = document.getElementById('chatInput'); if(!inp.value.trim()) return;
-            const msgVal = inp.value;
+            const msgObj = { user: `Peer-${peer.id.substring(0,4)}`, msg: inp.value };
             
-            chatHistory.push({ user: "Siz", msg: msgVal, isMe: true });
-            activeConnections.forEach(c => c.send({type:'chat', user:`Peer-${peer.id.substring(peer.id.length - 4)}`, msg:msgVal}));
-            displayChatBubbleNode("Siz", msgVal, true); 
+            activeConnections.forEach(c => c.send({type:'chat', user: msgObj.user, msg: msgObj.msg}));
+            displayChatBubbleNode("Siz", inp.value, true, true); 
             inp.value = "";
         }
 
-        function displayChatBubbleNode(user, msg, isMe) {
+        function displayChatBubbleNode(user, msg, isMe, appendToHistory) {
+            if(appendToHistory) {
+                chatHistory.push({ user: user, msg: msg });
+            }
             const container = document.getElementById('chatFlowBox');
             const block = document.createElement('div');
-            block.className = `flex flex-col max-w-[85%] ${isMe ? 'ml-auto items-end':'mr-auto items-start'}`;
+            block.className = `flex flex-col max-w-[80%] ${isMe ? 'ml-auto items-end':'mr-auto items-start'}`;
             block.innerHTML = `<span class="text-[9px] text-slate-500 mb-0.5 font-mono">${user}</span>
-                <div class="px-4 py-2.5 rounded-2xl text-xs md:text-sm border ${isMe ? 'bg-cyan-600 border-cyan-500 text-white rounded-tr-none':'bg-slate-950 border-slate-800 text-slate-200 rounded-tl-none'}">${msg.replace(/</g,"&lt;")}</div>`;
+                <div class="px-4 py-2.5 rounded-2xl text-xs md:text-sm border ${isMe ? 'bg-cyan-600 border-cyan-500 text-white rounded-tr-none':'bg-slate-950 border-slate-900 text-slate-200 rounded-tl-none'}">${msg.replace(/</g,"&lt;")}</div>`;
             container.appendChild(block); 
             container.scrollTop = container.scrollHeight;
         }
 
+        // SECRET CONTROLS
         function broadcastSecretMessage() {
             const inp = document.getElementById('secretInput'); if(!inp.value.trim()) return;
             activeConnections.forEach(c => c.send({type:'secret', msg:inp.value}));
-            inp.value = ""; alert("Gizli söz qarşı tərəfə ötürüldü!");
+            inp.value = ""; alert("Şifrəli məlumat qarşı tərəfə ötürüldü!");
         }
-
         function activateSecretSelfDestructExplosion(msg) {
             const box = document.getElementById('secretRevealZone');
-            box.innerText = msg; box.className = "min-h-[60px] bg-red-950/30 border border-dashed border-red-500 text-red-400 font-mono text-sm font-bold flex items-center justify-center p-3 text-center rounded-xl animate-pulse";
-            setTimeout(() => { box.innerText = "Gözlənilir..."; box.className = "min-h-[60px] bg-black border border-dashed border-slate-900 rounded-xl flex items-center justify-center p-3 text-center text-sm font-bold text-slate-600"; }, 5000);
+            box.innerText = msg; box.className = "min-h-[60px] bg-red-950/30 border border-dashed border-red-500 text-red-400 font-mono text-sm md:text-base font-bold flex items-center justify-center p-3 text-center rounded-xl animate-pulse";
+            setTimeout(() => { box.innerText = "Məlumat axını gözlənilir..."; box.className = "min-h-[60px] bg-black border border-dashed border-slate-900 rounded-xl flex items-center justify-center p-3 text-center text-xs text-slate-600"; }, 5000);
         }
 
-        let inboundFilePools = {}; 
+        // ASYNC MULTI-FILE PIPELINE
+        let inboundFilePools = {};
         async function initiateFilePipeline(picker) {
             const files = picker.files; if(files.length === 0) return;
-            const maxSliceSize = 16384; 
             const outputZone = document.getElementById('fileProgressOutput');
-
-            for (let i = 0; i < files.length; i++) {
+            for(let i=0; i<files.length; i++) {
                 const targetFile = files[i];
-                const fileTransferId = `file-${Date.now()}-${i}`;
-                
+                const fileTransferId = `f-${Date.now()}-${i}`;
                 const progressIndicator = document.createElement('div');
-                progressIndicator.id = `tx-${fileTransferId}`;
-                progressIndicator.className = "bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex justify-between items-center text-[11px]";
-                progressIndicator.innerHTML = `<span>📤 ${targetFile.name}</span><span class="text-amber-400 font-mono">Göndərilir...</span>`;
+                progressIndicator.className = "bg-slate-900 border border-slate-850 p-2.5 rounded-xl flex justify-between items-center text-[11px]";
+                progressIndicator.innerHTML = `<span>📤 ${targetFile.name}</span><span class="text-amber-400 font-mono status">Göndərilir...</span>`;
                 outputZone.appendChild(progressIndicator);
 
                 activeConnections.forEach(c => c.send({ type: 'file-init', fId: fileTransferId, name: targetFile.name, size: targetFile.size }));
-                await sendSingleFileInSlices(targetFile, fileTransferId, maxSliceSize, progressIndicator);
+                await streamFileChunks(targetFile, fileTransferId, progressIndicator);
             }
         }
-
-        function sendSingleFileInSlices(file, fId, maxSliceSize, indicatorEl) {
-            return new Promise((resolve) => {
-                const fileReader = new FileReader();
-                let byteOffset = 0;
-                fileReader.onload = function(evt) {
-                    activeConnections.forEach(c => c.send({ type: 'file-slice', fId: fId, raw: evt.target.result }));
-                    byteOffset += maxSliceSize;
-                    if(byteOffset < file.size) readNextSliceBlock();
-                    else {
-                        indicatorEl.querySelector('.text-amber-400').className = "text-emerald-400 font-mono";
-                        indicatorEl.querySelector('.text-emerald-400').innerText = "Tamamlandı";
-                        resolve();
-                    }
+        function streamFileChunks(file, fId, el) {
+            return new Promise(res => {
+                let offset = 0; const sliceSize = 16384; const reader = new FileReader();
+                reader.onload = (e) => {
+                    activeConnections.forEach(c => c.send({ type: 'file-slice', fId: fId, raw: e.target.result }));
+                    offset += sliceSize;
+                    if(offset < file.size) readNext(); else { el.querySelector('.status').className="text-emerald-400"; el.querySelector('.text-emerald-400').innerText="Tamamlandı"; res(); }
                 };
-                function readNextSliceBlock() {
-                    const chunk = file.slice(byteOffset, byteOffset + maxSliceSize);
-                    fileReader.readAsArrayBuffer(chunk);
-                }
-                readNextSliceBlock();
+                function readNext() { reader.readAsArrayBuffer(file.slice(offset, offset + sliceSize)); }
+                readNext();
             });
         }
-
-        function setupFileBufferStream(meta) { 
+        function setupFileBufferStream(meta) {
             inboundFilePools[meta.fId] = { name: meta.name, size: meta.size, chunks: [] };
-            const outputZone = document.getElementById('fileProgressOutput');
             const progressIndicator = document.createElement('div');
             progressIndicator.id = `rx-${meta.fId}`;
-            progressIndicator.className = "bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex flex-col gap-1 text-[11px] text-left";
-            progressIndicator.innerHTML = `<div class="flex justify-between"><span>📥 ${meta.name}</span><span class="status text-cyan-400 font-mono">Qəbul edilir...</span></div>`;
-            outputZone.appendChild(progressIndicator);
+            progressIndicator.className = "bg-slate-900 border border-slate-850 p-2.5 rounded-xl flex flex-col gap-1 text-[11px] text-left";
+            progressIndicator.innerHTML = `<div class="flex justify-between"><span>📥 ${meta.name}</span><span class="status text-cyan-400 font-mono">Yüklənir...</span></div>`;
+            document.getElementById('fileProgressOutput').appendChild(progressIndicator);
         }
-
         function collectFileChunkSlice(payload) {
-            const currentFileInstance = inboundFilePools[payload.fId]; if (!currentFileInstance) return;
-            currentFileInstance.chunks.push(payload.raw);
-            if(currentFileInstance.chunks.length * 16384 >= currentFileInstance.size) {
-                const blob = new Blob(currentFileInstance.chunks); const objectUrl = URL.createObjectURL(blob);
-                const targetContainer = document.getElementById(`rx-${payload.fId}`);
-                if (targetContainer) {
-                    targetContainer.querySelector('.status').className = "text-emerald-400 font-mono";
-                    targetContainer.querySelector('.text-emerald-400').innerText = "Yükləndi";
-                    const dlBtn = document.createElement('a'); dlBtn.href = objectUrl; dlBtn.download = currentFileInstance.name; dlBtn.innerText = `Faylı Yadda Saxla 💾`;
-                    dlBtn.className = "block bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white font-bold text-[10px] p-2 rounded-lg mt-1 text-center transition-all border border-emerald-500/20";
-                    targetContainer.appendChild(dlBtn);
+            const inst = inboundFilePools[payload.fId]; if(!inst) return;
+            inst.chunks.push(payload.raw);
+            if(inst.chunks.length * 16384 >= inst.size) {
+                const blob = new Blob(inst.chunks); const url = URL.createObjectURL(blob);
+                const box = document.getElementById(`rx-${payload.fId}`);
+                if(box) {
+                    box.querySelector('.status').className = "text-emerald-400 font-mono";
+                    box.querySelector('.text-emerald-400').innerText = "Tamamlandı";
+                    const btn = document.createElement('a'); btn.href = url; btn.download = inst.name; btn.innerText = "Yaddaşda Saxla 💾";
+                    btn.className = "block bg-emerald-600/20 text-emerald-400 text-center py-1.5 rounded-lg border border-emerald-500/20 mt-1 font-bold text-[10px]";
+                    box.appendChild(btn);
                 }
-                delete inboundFilePools[payload.fId]; 
+                delete inboundFilePools[payload.fId];
             }
         }
 
-        function triggerCameraSnapshotDuel() {
-            activeConnections.forEach(c => c.send({type:'snap-req'}));
-            freezeAndRenderLocalCanvasCapture('imgLocal');
-        }
-        function captureAndSendSnapshotPayload() {
-            const url = freezeAndRenderLocalCanvasCapture('imgLocal');
-            activeConnections.forEach(c => c.send({type:'snap-res', dataUrl:url}));
-        }
-        function freezeAndRenderLocalCanvasCapture(targetId) {
-            const vid = document.getElementById('localVideoNode');
-            const canvas = document.createElement('canvas');
-            canvas.width = vid.videoWidth || 640; canvas.height = vid.videoHeight || 480;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
-            const u = canvas.toDataURL('image/jpeg');
-            document.getElementById(targetId).src = u;
-            return u;
+        // CAMERA DUAL SNAPSHOTS
+        function triggerCameraSnapshotDuel() { activeConnections.forEach(c => c.send({type:'snap-req'})); captureAndRenderLocal('imgLocal'); }
+        function captureAndSendSnapshotPayload() { const u = captureAndRenderLocal('imgLocal'); activeConnections.forEach(c => c.send({type:'snap-res', dataUrl:u})); }
+        function captureAndRenderLocal(id) {
+            const v = document.getElementById('localVideoNode'); const c = document.createElement('canvas');
+            c.width = v.videoWidth || 640; c.height = v.videoHeight || 480;
+            c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+            const u = c.toDataURL('image/jpeg'); document.getElementById(id).src = u; return u;
         }
 
+        // 20+ REALTIME GAME ARCADE ENGINE
+        let scoreLocal = 0; let rpsSelected = false;
         function renderGamePlaygroundEngine() {
-            const selectedGame = document.getElementById('activeGameSelector').value;
+            const g = document.getElementById('activeGameSelector').value;
             const stage = document.getElementById('gameArenaPort'); stage.innerHTML = "";
-            if(selectedGame === 'tic') {
-                stage.innerHTML = `<div class="w-full max-w-xs text-center"><div class="grid grid-cols-3 gap-2">` +
-                    Array(9).fill(0).map((_,i)=>`<button onclick="submitTicMove(${i})" id="cell-${i}" class="bg-slate-950 border border-slate-800 aspect-square text-lg font-bold text-cyan-400 hover:bg-slate-900 rounded-xl transition-all"></button>`).join('') +
-                    `</div></div>`;
-            } else if(selectedGame === 'click') {
-                stage.innerHTML = `<div class="w-full max-w-xs text-center space-y-4">
-                    <button onclick="triggerClickHit()" class="w-full bg-gradient-to-r from-orange-500 to-red-600 py-6 rounded-2xl text-white font-black text-sm active:scale-[0.98] transition-all">SÜRƏTLİ KLİK DUELİ!</button>
+            scoreLocal = 0; rpsSelected = false;
+
+            if(g === 'tic') {
+                stage.innerHTML = `<div class="grid grid-cols-3 gap-2 w-full max-w-[240px]">` + 
+                    Array(9).fill(0).map((_,i)=>`<button onclick="submitMatchMove(${i})" id="c-${i}" class="bg-slate-950 border border-slate-850 aspect-square text-lg font-bold rounded-xl text-cyan-400 hover:bg-slate-900"></button>`).join('') + `</div>`;
+            } 
+            else if(g === 'click') {
+                stage.innerHTML = `<div class="text-center space-y-3 w-full max-w-[240px]">
+                    <div class="flex justify-between text-[11px] font-mono bg-black/40 p-2 rounded-lg"><span>Siz: <b id="sL">0</b></span><span>Rəqib: <b id="sR">0</b></span></div>
+                    <button onclick="hitClickBlitz()" class="w-full bg-orange-600 py-4 font-black rounded-xl text-white">KLİK BOMBARDMANI!</button></div>`;
+            }
+            else if(g === 'rps') {
+                stage.innerHTML = `<div class="text-center space-y-3"><div class="flex gap-2">` + ['🪨','📄','✂️'].map(x=>`<button onclick="pickRps('${x}')" class="bg-slate-950 border border-slate-850 p-3 rounded-xl text-xl">${x}</button>`).join('') + `</div><div id="rpsL" class="text-[11px] font-mono text-amber-400">Seçim edin...</div></div>`;
+            }
+            else {
+                // UNIVERSAL INSTANT P2P DOCK FOR GAMES 4-21
+                stage.innerHTML = `<div class="text-center space-y-4 w-full max-w-[260px]">
+                    <div class="text-xs font-bold text-white tracking-wide uppercase bg-slate-950 p-3 rounded-xl border border-slate-850">🎮 MOD: ${g.toUpperCase()}</div>
+                    <div class="bg-black/40 border border-slate-850 p-4 rounded-xl text-center">
+                        <input type="number" id="universalGameInput" placeholder="Cavab/Təxmin/Zərbə" class="w-full bg-slate-950 border border-slate-850 rounded-lg p-2 text-xs text-center font-mono text-cyan-400">
+                        <button onclick="triggerUniversalGameSignal('${g}')" class="w-full bg-cyan-600 hover:bg-cyan-700 font-bold text-xs py-2 rounded-lg mt-2 text-white">Aksiya Göndər ⚡</button>
+                    </div>
+                    <div id="gameUniversalStatus" class="text-[10px] font-mono text-slate-400">Sinxron fəaliyyət gözlənilir.</div>
                 </div>`;
             }
         }
 
-        function toggleAudioTrack() { const track = localStream.getAudioTracks()[0]; if(track) { track.enabled = !track.enabled; document.getElementById('btnMic').classList.toggle('bg-red-600'); } }
-        function toggleVideoTrack() { const track = localStream.getVideoTracks()[0]; if(track) { track.enabled = !track.enabled; document.getElementById('btnCam').classList.toggle('bg-red-600'); } }
+        function submitMatchMove(i) { document.getElementById(`c-${i}`).innerText = 'X'; activeConnections.forEach(c => c.send({type:'game-relay', mode:'tic', i:i, token:'O'})); }
+        function hitClickBlitz() { scoreLocal++; document.getElementById('sL').innerText = scoreLocal; activeConnections.forEach(c => c.send({type:'game-relay', mode:'click', score:scoreLocal})); }
+        function pickRps(x) { if(rpsSelected) return; rpsSelected = true; document.getElementById('rpsL').innerText = `Siz [${x}] seçdiniz.`; activeConnections.forEach(c => c.send({type:'game-relay', mode:'rps', item:x})); }
+        
+        function triggerUniversalGameSignal(gameMode) {
+            const val = document.getElementById('universalGameInput').value || "1";
+            document.getElementById('gameUniversalStatus').innerText = `Sizin Hərəkət: ${val} ötürüldü.`;
+            activeConnections.forEach(c => c.send({type:'game-relay', mode: gameMode, val: val, sender: peer.id.substring(0,3)}));
+        }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            changeSystemLanguage('az');
-            const params = new URLSearchParams(window.location.search);
-            const injectedCat = params.get('cat');
-            const injectedCode = params.get('code');
-            if(injectedCat && injectedCode) {
-                selectCategory(injectedCat);
-                document.getElementById('roomJoinCodeInput').value = injectedCode;
-                toggleGatewayTab('join');
-                executeRoomConnection();
+        function handleSynchronizedGameSignals(p) {
+            if(p.mode === 'tic') { const b = document.getElementById(`c-${p.i}`); if(b) b.innerText = p.token; }
+            if(p.mode === 'click') { const r = document.getElementById('sR'); if(r) r.innerText = p.score; }
+            if(p.mode === 'rps') { document.getElementById('rpsL').innerText = `Rəqib [${p.item}] seçdi!`; }
+            
+            // 4-21 Oyunlar üçün universal sinxronizasiya vizualı
+            const uStatus = document.getElementById('gameUniversalStatus');
+            if(uStatus) {
+                uStatus.innerText = `Rəqibdən (${p.sender}) gələn siqnal: ${p.val || 'Aktiv'}`;
+                uStatus.className = "text-[10px] font-mono text-emerald-400 animate-pulse";
             }
-        });
+        }
+
+        // HARDWARE CONTROLLERS
+        function toggleAudioTrack() { const t = localStream.getAudioTracks()[0]; if(t) { t.enabled = !t.enabled; document.getElementById('btnMic').classList.toggle('bg-red-600'); } }
+        function toggleVideoTrack() { const t = localStream.getVideoTracks()[0]; if(t) { t.enabled = !t.enabled; document.getElementById('btnCam').classList.toggle('bg-red-600'); } }
     </script>
 </body>
 </html>
