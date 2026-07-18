@@ -1,404 +1,615 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="az" class="h-full bg-[#050508]">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CODMON - Taktiki İdarəetmə Paneli (Mission Control)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>P2POMNI — Enterprise Peer Nexus</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
-        body {
-            font-family: 'Share Tech Mono', monospace;
-            background-color: #020205;
-            color: #00ffcc;
-            overflow: hidden;
-            margin: 0;
-        }
-        /* Kiber Grid Fonu */
-        .cyber-bg {
-            background-image: linear-gradient(rgba(0, 255, 204, 0.03) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(0, 255, 204, 0.03) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-        /* Neon Kölgələr */
-        .neon-border {
-            border: 1px solid rgba(0, 255, 204, 0.3);
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.1);
-            backdrop-filter: blur(5px);
-        }
-        .neon-text {
-            text-shadow: 0 0 8px rgba(0, 255, 204, 0.6);
-        }
-        /* Radar animasiyası */
-        @keyframes pulse {
-            0% { transform: scale(0.8); opacity: 0.8; }
-            100% { transform: scale(2.5); opacity: 0; }
-        }
-        .radar-wave {
-            position: absolute;
-            border: 2px solid #00ffcc;
-            border-radius: 50%;
-            animation: pulse 4s infinite linear;
-        }
-        /* Sürüşmə paneli (Scrollbar) */
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #00ffcc;
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', sans-serif; }
+        .glass-panel { background: rgba(13, 15, 24, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .active-glow { background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%) !important; text-shadow: 0 2px 10px rgba(6,182,212,0.4); }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #07080d; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
     </style>
 </head>
-<body class="cyber-bg h-screen w-screen relative select-none">
+<body class="h-full text-slate-100 flex flex-col overflow-hidden antialiased">
 
-    <div id="canvas-container" class="absolute inset-0 z-0"></div>
-
-    <div class="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-6">
-        
-        <header class="flex justify-between items-center pointer-events-auto">
-            <div class="neon-border bg-black/60 px-6 py-3 flex items-center space-x-4">
-                <div class="w-3 h-3 bg-red-600 rounded-full animate-ping"></div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-widest neon-text">CODMON // TACTICAL MAP</h1>
-                    <p class="text-xs text-cyan-400">STATUS: ACTIVE SWARM SIMULATION</p>
+    <!-- TOP TELEMETRY BAR -->
+    <header class="bg-slate-950/80 backdrop-blur-md border-b border-slate-900/80 px-4 md:px-6 py-3 flex items-center justify-between shrink-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center font-extrabold text-white text-xl shadow-lg shadow-cyan-500/20">Ω</div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="font-extrabold text-sm md:text-base tracking-wide text-white">P2POMNI</h1>
+                    <span class="text-[9px] bg-cyan-500/10 border border-cyan-500/30 px-1.5 py-0.5 rounded text-cyan-400 font-mono uppercase">v2.0 Pro</span>
                 </div>
+                <span class="text-[10px] text-slate-400 font-mono tracking-wide block" id="globalStatus">Sistem Hazırdır • Kateqoriya Seçin</span>
             </div>
-            
-            <div class="neon-border bg-black/60 px-6 py-3 text-right">
-                <span class="text-xs block text-cyan-400">COORDINATES // SECTOR 04-A</span>
-                <span class="text-sm font-mono tracking-wider" id="live-coords">40.4093° N, 49.8671° E</span>
-            </div>
-        </header>
-
-        <div class="flex justify-between items-stretch h-[65vh] my-4">
-            
-            <aside class="w-80 neon-border bg-black/60 p-4 pointer-events-auto flex flex-col justify-between overflow-y-auto">
-                <div>
-                    <div class="border-b border-cyan-500/30 pb-2 mb-4">
-                        <span class="text-xs text-cyan-400">SWARM INTEL // DRON STATS</span>
-                    </div>
-                    
-                    <div class="space-y-3" id="drone-list">
-                        </div>
-                </div>
-
-                <div class="border-t border-cyan-500/30 pt-4 mt-4 text-xs space-y-1">
-                    <div class="flex justify-between"><span>TOTAL UNITS:</span><span class="font-bold">12 / CODMON-V1</span></div>
-                    <div class="flex justify-between"><span>SWARM INTEGRITY:</span><span class="text-emerald-400 font-bold">98.4%</span></div>
-                    <div class="flex justify-between"><span>COMM LINK:</span><span class="text-emerald-400 font-bold">STABLE</span></div>
-                </div>
-            </aside>
-
-            <aside class="w-80 neon-border bg-black/60 p-4 pointer-events-auto flex flex-col justify-between">
-                <div>
-                    <div class="border-b border-cyan-500/30 pb-2 mb-4">
-                        <span class="text-xs text-cyan-400">TARGET ACQUISITION</span>
-                    </div>
-                    
-                    <div class="bg-red-950/20 border border-red-500/30 p-3 rounded mb-4">
-                        <div class="flex justify-between text-red-500 text-xs font-bold mb-1">
-                            <span>CRITICAL TARGET</span>
-                            <span class="animate-pulse">⚠️ LOCKED</span>
-                        </div>
-                        <p class="text-lg font-bold text-red-400">CORVETTE-X9</p>
-                        <p class="text-[10px] text-red-500/80">DST: 4.2 KM | SPD: 18 KNOTS</p>
-                    </div>
-
-                    <div class="space-y-2 text-xs">
-                        <span class="text-cyan-400 block mb-1">MISSION PARAMETERS:</span>
-                        <div class="flex justify-between border-b border-cyan-900 py-1"><span>AUTONOMY MODE:</span><span class="text-yellow-400">SWARM-DECISION</span></div>
-                        <div class="flex justify-between border-b border-cyan-900 py-1"><span>ATTACK PROTOCOL:</span><span class="text-red-500">STANDBY</span></div>
-                        <div class="flex justify-between border-b border-cyan-900 py-1"><span>ANTI-JAMMING:</span><span class="text-emerald-400">ACTIVE</span></div>
-                    </div>
-                </div>
-
-                <div class="space-y-2 pt-4">
-                    <button id="btn-attack" class="w-full bg-red-600/20 hover:bg-red-600/40 border border-red-500 text-red-400 py-2 text-xs font-bold tracking-wider transition duration-300">
-                        ENGAGE ATTACK MODE
-                    </button>
-                    <button id="btn-swarm" class="w-full bg-cyan-600/20 hover:bg-cyan-600/40 border border-cyan-500 text-cyan-400 py-2 text-xs font-bold tracking-wider transition duration-300">
-                        RE-ROUTE SWARM PATH
-                    </button>
-                </div>
-            </aside>
         </div>
+        
+        <!-- Quick Language Matrix & Peer Counter -->
+        <div class="flex items-center gap-3">
+            <div class="hidden sm:flex items-center gap-1.5 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800 text-[11px] font-mono">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-slate-400">İştirakçılar:</span>
+                <span id="peerCounterGlobal" class="text-white font-bold">1</span>
+            </div>
+            <div class="flex gap-1 bg-black/40 p-1 rounded-xl border border-slate-800">
+                <button onclick="changeSystemLanguage('az')" class="px-2 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind bg-cyan-600 text-white" id="l-az">AZ</button>
+                <button onclick="changeSystemLanguage('en')" class="px-2 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind text-slate-400" id="l-en">EN</button>
+                <button onclick="changeSystemLanguage('tr')" class="px-2 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind text-slate-400" id="l-tr">TR</button>
+                <button onclick="changeSystemLanguage('ru')" class="px-2 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind text-slate-400" id="l-ru">RU</button>
+            </div>
+        </div>
+    </header>
 
-        <footer class="neon-border bg-black/60 p-4 pointer-events-auto flex justify-between items-center">
-            <div class="text-xs flex space-x-6">
-                <div><span class="text-cyan-400">SYSTEM TIME:</span> <span id="sys-time">00:00:00</span></div>
-                <div><span class="text-cyan-400">LATENCY:</span> <span class="text-emerald-400">12ms</span></div>
-                <div><span class="text-cyan-400">COMPASS:</span> <span id="compass-dir">180° S</span></div>
+    <!-- CORE WORKSPACE PORT -->
+    <div class="flex-1 flex min-h-0 w-full relative">
+        
+        <!-- SIDE NAVIGATION MATRIX -->
+        <nav class="w-20 md:w-64 bg-slate-950/40 border-r border-slate-900/60 flex flex-col p-2.5 gap-1.5 shrink-0 z-40 overflow-y-auto">
+            <span id="navHeader" class="hidden md:block text-[10px] font-bold uppercase text-slate-500 tracking-widest px-3 py-2">Körpü Kateqoriyaları</span>
+            
+            <button onclick="selectCategory('media')" id="cat-media" class="w-full flex flex-col md:flex-row items-center gap-2.5 px-3 py-3 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/40 active-glow text-white">
+                <span class="text-lg">📹</span> <span class="text-[9px] md:text-sm tracking-wide font-semibold" id="m-media">Media & Video</span>
+            </button>
+            <button onclick="selectCategory('chat')" id="cat-chat" class="w-full flex flex-col md:flex-row items-center gap-2.5 px-3 py-3 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/40">
+                <span class="text-lg">💬</span> <span class="text-[9px] md:text-sm tracking-wide font-semibold" id="m-browser">Chat Bridge</span>
+            </button>
+            <button onclick="selectCategory('secret')" id="cat-secret" class="w-full flex flex-col md:flex-row items-center gap-2.5 px-3 py-3 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/40">
+                <span class="text-lg">🥷</span> <span class="text-[9px] md:text-sm tracking-wide font-semibold" id="m-secret">Gizli Sözlər</span>
+            </button>
+            <button onclick="selectCategory('files')" id="cat-files" class="w-full flex flex-col md:flex-row items-center gap-2.5 px-3 py-3 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/40">
+                <span class="text-lg">📁</span> <span class="text-[9px] md:text-sm tracking-wide font-semibold" id="m-files">Fayl Transferi</span>
+            </button>
+            <button onclick="selectCategory('games')" id="cat-games" class="w-full flex flex-col md:flex-row items-center gap-2.5 px-3 py-3 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/40">
+                <span class="text-lg">🎮</span> <span class="text-[9px] md:text-sm tracking-wide font-semibold" id="m-games">P2P Oyunlar</span>
+            </button>
+            <button onclick="selectCategory('camera')" id="cat-camera" class="w-full flex flex-col md:flex-row items-center gap-2.5 px-3 py-3 rounded-xl text-xs md:text-sm font-medium transition-all text-slate-400 hover:bg-slate-900/40">
+                <span class="text-lg">📸</span> <span class="text-[9px] md:text-sm tracking-wide font-semibold" id="m-camera">Qarşılıqlı Şəkil</span>
+            </button>
+        </nav>
+
+        <!-- DYNAMIC CONTROL ARENA -->
+        <div class="flex-1 flex flex-col min-h-0 bg-[#07080e] p-3 md:p-6 relative overflow-hidden">
+            
+            <!-- CENTRAL GATEWAY GATE (LOBBY UI) -->
+            <div id="categoryLobbyGateway" class="absolute inset-0 bg-[#05060a]/95 backdrop-blur-xl z-30 flex items-center justify-center p-4 overflow-y-auto">
+                <div class="w-full max-w-md glass-panel rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 my-auto">
+                    <div class="text-center">
+                        <span id="gatewayTargetBadge" class="px-3 py-1 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 text-cyan-400 rounded-full text-[10px] font-bold uppercase tracking-widest">MEDIA & VIDEO</span>
+                        <h3 id="gatewayTitle" class="text-xl font-extrabold text-white mt-3 tracking-tight">Otaq İdarəetməsi</h3>
+                        <p id="gatewayDesc" class="text-xs text-slate-400 mt-1">Təhlükəsiz kanala qoşulun və ya yenisini başladın.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 bg-black/40 p-1 rounded-xl border border-slate-900">
+                        <button onclick="toggleGatewayTab('create')" id="tab-c" class="py-2 text-xs font-bold rounded-lg text-white bg-slate-800/80 shadow">Otaq Yarat</button>
+                        <button onclick="toggleGatewayTab('join')" id="tab-j" class="py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white">Otağa Qoşul</button>
+                    </div>
+
+                    <!-- ROOM CREATION INTERFACE -->
+                    <div id="gateCreateBlock" class="space-y-4">
+                        <div>
+                            <label id="lblUserLimit" class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">İştirakçı Limiti</label>
+                            <input type="text" id="roomLimitInput" value="Unlimited" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-500 font-medium">
+                        </div>
+                        <button onclick="executeRoomGeneration()" id="btnActionCreate" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 py-3.5 text-sm font-bold text-white rounded-xl shadow-lg shadow-cyan-500/10 hover:opacity-90 transition-all">Bu Bölmədə Otaq Yarat</button>
+                    </div>
+
+                    <!-- ROOM JOIN INTERFACE -->
+                    <div id="gateJoinBlock" class="space-y-4 hidden">
+                        <div>
+                            <label id="lblEnterCode" class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">4 Rəqəmli Giriş Kodu</label>
+                            <input type="text" id="roomJoinCodeInput" maxlength="4" placeholder="••••" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-center text-2xl font-black text-cyan-400 tracking-widest focus:outline-none focus:border-cyan-500 mono">
+                        </div>
+                        <button onclick="executeRoomConnection()" id="btnActionJoin" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 py-3.5 text-sm font-bold text-white rounded-xl shadow-lg shadow-emerald-500/10 hover:opacity-90 transition-all">Otağa Qoşul</button>
+                    </div>
+
+                    <!-- DYNAMIC TIME-EXPIRY ENGINE -->
+                    <div id="gateResponseBlock" class="bg-black/60 border border-slate-800/80 rounded-2xl p-4 text-center space-y-3 hidden">
+                        <span id="lblRoomActive" class="text-[9px] font-bold text-amber-400 uppercase tracking-widest block">Giriş Kodu Aktivdir (3 Dəqiqə Limit!)</span>
+                        <div class="flex items-center justify-center gap-3">
+                            <span id="dispCode" class="text-4xl font-black text-white tracking-widest mono">0000</span>
+                            <div id="dispTimer" class="bg-red-500/10 border border-red-500/30 text-red-400 px-2.5 py-1 rounded-lg text-xs font-mono font-bold">03:00</div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                            <button onclick="copyGatewayDirectLink()" id="btnCopyLink" class="py-2.5 bg-slate-900 border border-slate-800 text-xs font-semibold rounded-xl text-slate-300 hover:bg-slate-850">Giriş Linki</button>
+                            <button onclick="dismissGatewayAndEnter()" id="btnEnterWorkspace" class="py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-xs font-bold text-white rounded-xl shadow-md">Daxil Ol →</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="text-xs text-cyan-400/80 italic" id="log-ticker">
-                >> INITIALIZING TACTICAL MAP OVERLAY... DONE.
+
+            <!-- WORKSPACE PANELS -->
+            <!-- 1. STREAMING MATRIX -->
+            <div id="panel-media" class="panel-node flex-1 flex flex-col min-h-0">
+                <div id="mediaGrid" class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto content-start pb-4">
+                    <div class="relative bg-slate-950 border border-cyan-500/30 rounded-2xl overflow-hidden aspect-video shadow-2xl group">
+                        <video id="localVideoNode" autoplay muted playsinline class="w-full h-full object-cover"></video>
+                        <div class="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] text-cyan-400 border border-slate-800 flex items-center gap-1.5 font-medium">
+                            <span class="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse"></span> Siz (Host)
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 bg-slate-950/80 backdrop-blur-md border border-slate-900 rounded-2xl flex items-center justify-center gap-4 shrink-0 shadow-lg">
+                    <button onclick="toggleAudioTrack()" id="btnMic" class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 text-white flex items-center justify-center text-lg hover:bg-slate-800 active:scale-95 transition-all">🎤</button>
+                    <button onclick="toggleVideoTrack()" id="btnCam" class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 text-white flex items-center justify-center text-lg hover:bg-slate-800 active:scale-95 transition-all">📷</button>
+                    <button onclick="leaveCurrentRoomState()" class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 text-white flex items-center justify-center text-lg shadow-lg hover:opacity-90 active:scale-95 transition-all">❌</button>
+                </div>
             </div>
-        </footer>
+
+            <!-- 2. HIGH-END SECURE CHAT WITH LIVE HISTORY SYNC -->
+            <div id="panel-chat" class="panel-node flex-1 flex flex-col min-h-0 hidden">
+                <div id="chatFlowBox" class="flex-1 overflow-y-auto space-y-3.5 p-4 bg-black/40 rounded-2xl border border-slate-900/60">
+                    <div class="text-center py-8 text-slate-600 text-xs font-mono" id="chatEmptyState">Təhlükəsiz P2P Əlaqə Qurulur...</div>
+                </div>
+                <form onsubmit="broadcastChatMessage(event)" class="mt-3 flex items-center gap-2 shrink-0">
+                    <input type="text" id="chatInput" placeholder="Ucdan-uca şifrəli mesaj yazın..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white placeholder-slate-600">
+                    <button type="submit" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all shadow-md active:scale-95">Göndər</button>
+                </form>
+            </div>
+
+            <!-- 3. QUANTUM SECRET DESTRUCT -->
+            <div id="panel-secret" class="panel-node flex-1 flex flex-col min-h-0 hidden max-w-xl mx-auto w-full justify-center px-2">
+                <div class="bg-slate-950/90 border border-slate-900 rounded-2xl p-6 space-y-4 shadow-2xl">
+                    <h3 id="lblSecTitle" class="text-sm font-bold text-red-400 tracking-wider uppercase">Şifrəli Birdəfəlik Mesaj Modulu</h3>
+                    <p id="lblSecDesc" class="text-xs text-slate-400">Göndərilən data ekranda yalnız 5 saniyə aktiv qalacaq və RAM-dan birdəfəlik məhv ediləcək.</p>
+                    <input type="text" id="secretInput" placeholder="Bura yazılan söz yox olacaq..." class="w-full bg-black/60 border border-slate-850 rounded-xl px-4 py-3 text-sm text-red-300 font-mono focus:outline-none focus:border-red-500">
+                    <button onclick="broadcastSecretMessage()" id="btnSecSend" class="w-full bg-gradient-to-r from-red-500 to-rose-600 py-3 rounded-xl text-xs font-bold text-white shadow-md hover:opacity-90 transition-all">Gizli Data Ötür</button>
+                    <div id="secretRevealZone" class="min-h-[70px] bg-black/40 border-2 border-dashed border-slate-850 rounded-xl flex items-center justify-center p-4 text-center text-xs font-bold text-slate-500">Giriş gözlənilir...</div>
+                </div>
+            </div>
+
+            <!-- 4. PIPELINE MULTI-FILE ARCHITECTURE WITH CALCULATED PROGRESS -->
+            <div id="panel-files" class="panel-node flex-1 flex flex-col min-h-0 hidden max-w-xl mx-auto w-full justify-center px-2">
+                <div class="bg-slate-950/90 border border-slate-900 rounded-3xl p-6 md:p-8 text-center space-y-5 shadow-2xl">
+                    <div class="w-16 h-16 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-inner">📁</div>
+                    <div>
+                        <h3 id="lblFileTitle" class="text-base font-bold text-white">Çoxlu və Limitsiz P2P Obyekt Ötürülməsi</h3>
+                        <p class="text-xs text-slate-500 mt-1">Server yoxdur, fayllar birbaşa yaddaşdan yaddaşa keçir.</p>
+                    </div>
+                    <input type="file" id="filePicker" multiple class="hidden" onchange="initiateFilePipeline(this)">
+                    <button onclick="document.getElementById('filePicker').click()" id="lblPickFile" class="bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-200 px-6 py-3.5 rounded-xl text-xs font-bold transition-all w-full sm:w-auto shadow-sm">Kompüterdən Faylları Seçin</button>
+                    
+                    <!-- Dynamic Stream Pool Grid -->
+                    <div id="fileProgressOutput" class="text-xs font-mono text-cyan-400 space-y-2 max-h-56 overflow-y-auto pt-2 text-left"></div>
+                </div>
+            </div>
+
+            <!-- 5. SYNCHRONIZED MULTIPLAYER GAMES ARBITRAGE -->
+            <div id="panel-games" class="panel-node flex-1 flex flex-col min-h-0 hidden">
+                <div class="bg-slate-950/90 p-3 rounded-xl border border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+                    <select id="activeGameSelector" onchange="renderGamePlaygroundEngine()" class="bg-black border border-slate-850 text-xs font-bold text-white rounded-lg p-2.5 focus:outline-none w-full sm:w-auto">
+                        <option value="tic">1. Tic-Tac-Toe (X-O Match)</option>
+                        <option value="click">2. Click Speed Duel (Klik Sürəti)</option>
+                        <option value="rps">3. Rock Paper Scissors</option>
+                        <option value="math">4. Quantum Speed Math</option>
+                    </select>
+                    <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/30 border border-emerald-900/30 px-3 py-1 rounded-full shrink-0">Real-Time State Sinxronizasiyası</span>
+                </div>
+                <div id="gameArenaPort" class="flex-1 bg-black/20 border border-slate-900/60 rounded-2xl mt-4 p-4 flex items-center justify-center overflow-y-auto"></div>
+            </div>
+
+            <!-- 6. DUO-SNAPSHOT ACCELERATOR -->
+            <div id="panel-camera" class="panel-node flex-1 flex flex-col min-h-0 hidden max-w-xl mx-auto w-full justify-center px-2">
+                <div class="bg-slate-950/90 border border-slate-900 rounded-2xl p-6 text-center space-y-4 shadow-2xl">
+                    <h3 id="lblCamTitle" class="text-sm font-bold text-white tracking-wide uppercase">Sinxron Foto Doğrulama Modulu</h3>
+                    <button onclick="triggerCameraSnapshotDuel()" id="btnSnap" class="bg-gradient-to-r from-purple-500 to-indigo-600 hover:opacity-90 text-white font-bold px-6 py-3 rounded-xl text-xs shadow-md transition-all">📸 Qarşılıqlı Snapshot Çək</button>
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <div class="bg-black/60 border border-slate-900 p-2 rounded-xl"><span class="text-[9px] block text-slate-500 mb-1 font-mono">Sizin Kadr</span><img id="imgLocal" class="w-full aspect-video object-cover rounded-lg bg-slate-900"></div>
+                        <div class="bg-black/60 border border-slate-900 p-2 rounded-xl"><span class="text-[9px] block text-slate-500 mb-1 font-mono">Qarşı Tərəf</span><img id="imgRemote" class="w-full aspect-video object-cover rounded-lg bg-slate-900"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
 
+    <!-- CORE JAVASCRIPT LOGIC ENGINE -->
     <script>
-        // --- 1. SƏHNƏ VƏ KAMERA QURAŞDIRILMASI ---
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x020205, 0.015);
+        const langPack = {
+            az: { mMedia: "Media & Video", mChat: "Chat Bridge", mSecret: "Gizli Sözlər", mFiles: "Fayl Transferi", mGames: "P2P Oyunlar", mCam: "Qarşılıqlı Şəkil", title: "Otaq İdarəetməsi", desc: "Təhlükəsiz kanala qoşulun və ya yenisini başladın.", tabC: "Otaq Yarat", tabJ: "Otağa Qoşul", limit: "İştirakçı Limiti", btnC: "Bu Bölmədə Otaq Yarat", btnJ: "Otağa Qoşul", codeInp: "4 Rəqəmli Giriş Kodu", active: "Giriş Kodu Aktivdir (3 Dəqiqə Limit!)", link: "Giriş Linki", ws: "Daxil Ol →", navH: "Körpü Kateqoriyaları" },
+            en: { mMedia: "Media & Video", mChat: "Chat Bridge", mSecret: "Secret Words", mFiles: "File Transfer", mGames: "P2P Games", mCam: "Mutual Camera", title: "Room Management", desc: "Connect to a safe bridge or launch a new node.", tabC: "Create Room", tabJ: "Join Room", limit: "Participant Limit", btnC: "Create Category Room", btnJ: "Connect to Bridge", codeInp: "4 Digit Entry Code", active: "Entry Code Active (3 Mins Limit!)", link: "Get Link", ws: "Enter →", navH: "Bridge Categories" },
+            tr: { mMedia: "Medya & Video", mChat: "Chat Bridge", mSecret: "Gizli Kelimeler", mFiles: "Dosya Transferi", mGames: "P2P Oyunlar", mCam: "Karşılıklı Fotoğraf", title: "Oda Yönetimi", desc: "Güvenli kanala bağlanın veya yenisini başlatın.", tabC: "Oda Oluştur", tabJ: "Odaya Katıl", limit: "Katılımcı Sınırı", btnC: "Bu Bölümde Oda Aç", btnJ: "Odaya Bağlan", codeInp: "4 Haneli Giriş Kodu", active: "Giriş Kodu Aktif (3 Dakika Limit!)", link: "Bağlantı Linki", ws: "Giriş Yap →", navH: "Köprü Kategorileri" },
+            ru: { mMedia: "Медиа и Видео", mChat: "Чат-мост", mSecret: "Секретные слова", mFiles: "Передача файлов", mGames: "P2P Игры", mCam: "Взаимное фото", title: "Управление комнатой", desc: "Подключитесь к безопасному мосту или запустите узел.", tabC: "Создать", tabJ: "Войти", limit: "Лимит участников", btnC: "Создать комнату здесь", btnJ: "Подключиться", codeInp: "4-значный код", active: "Код активен (Лимит 3 минуты!)", link: "Ссылка", ws: "Войти →", navH: "Категории мостов" }
+        };
 
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 35, 55);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.setClearColor(scene.fog.color);
-        container.appendChild(renderer.domElement);
-
-        // Kamera idarəsi (Siçanla fırlatmaq və yaxınlaşdırmaq üçün)
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.maxPolarAngle = Math.PI / 2 - 0.05; // Yerin altına girməyi əngəlləyir
-        controls.minDistance = 10;
-        controls.maxDistance = 120;
-
-        // --- 2. İŞIQLANDIRMA ---
-        const ambientLight = new THREE.AmbientLight(0x0d2222);
-        scene.add(ambientLight);
-
-        const dirLight = new THREE.DirectionalLight(0x00ffcc, 1);
-        dirLight.position.set(5, 20, 10);
-        scene.add(dirLight);
-
-        // --- 3. DƏNİZ SAHƏSİ (Tactical Grid Surface) ---
-        // Kibernetik hərbi dəniz görüntüsü vermək üçün dalğalı bir səth qururuq
-        const gridGeo = new THREE.PlaneGeometry(120, 120, 40, 40);
-        const gridMat = new THREE.MeshBasicMaterial({
-            color: 0x005544,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.25
-        });
-        const seaGrid = new THREE.Mesh(gridGeo, gridMat);
-        seaGrid.rotation.x = -Math.PI / 2;
-        scene.add(seaGrid);
-
-        // --- 4. HƏDƏF (Target Corvette) ---
-        // Qırmızı rəngdə düşmən hədəfi və radar dalğası yaradırıq
-        const targetGroup = new THREE.Group();
-        targetGroup.position.set(15, 0, -15);
-        scene.add(targetGroup);
-
-        const targetGeo = new THREE.BoxGeometry(3, 1.5, 6);
-        const targetMat = new THREE.MeshBasicMaterial({ color: 0xff3333, wireframe: true });
-        const targetMesh = new THREE.Mesh(targetGeo, targetMat);
-        targetGroup.add(targetMesh);
-
-        // Hədəf Radar Halqası (Ölçüsü böyüyən dairə)
-        const radarRingGeo = new THREE.RingGeometry(0.1, 4, 32);
-        const radarRingMat = new THREE.MeshBasicMaterial({ color: 0xff3333, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
-        const radarRing = new THREE.Mesh(radarRingGeo, radarRingMat);
-        radarRing.rotation.x = -Math.PI / 2;
-        radarRing.position.y = 0.1;
-        targetGroup.add(radarRing);
-
-        // --- 5. CODMON DRON SWARM (Dəstə Simulyasiyası) ---
-        const drones = [];
-        const droneCount = 12;
-        const droneGroup = new THREE.Group();
-        scene.add(droneGroup);
-
-        // Dron modeli olaraq kiçik kiber-piramidalar yaradırıq
-        const droneGeo = new THREE.ConeGeometry(0.6, 1.8, 4);
-        droneGeo.rotateX(Math.PI / 2); // İrəli baxması üçün
-
-        for (let i = 0; i < droneCount; i++) {
-            const droneMat = new THREE.MeshBasicMaterial({
-                color: 0x00ffcc,
-                wireframe: true
-            });
-            const drone = new THREE.Mesh(droneGeo, droneMat);
-            
-            // Başlanğıc mövqeyi (Dairəvi düzülüşdə xaotik yayılma)
-            const angle = (i / droneCount) * Math.PI * 2;
-            const radius = 25 + Math.random() * 5;
-            drone.position.set(Math.cos(angle) * radius, 3 + Math.random() * 4, Math.sin(angle) * radius);
-            
-            // Hər drona fərqli sürət və bucaq veririk
-            drone.userData = {
-                angle: angle,
-                speed: 0.005 + Math.random() * 0.008,
-                radius: radius,
-                waveSpeed: 1 + Math.random() * 2,
-                baseY: drone.position.y,
-                id: `CODMON-u${100 + i}`
-            };
-            
-            droneGroup.add(drone);
-            drones.push(drone);
-        }
-
-        // --- 6. LAZER KİLİDLƏMƏ XƏTLƏRİ (Dronlardan Hədəfə) ---
-        const laserLines = [];
-        const lineMat = new THREE.LineBasicMaterial({ color: 0x00ffcc, transparent: true, opacity: 0.4 });
-
-        drones.forEach(drone => {
-            const points = [];
-            points.push(drone.position);
-            points.push(targetGroup.position);
-
-            const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-            const line = new THREE.Line(lineGeo, lineMat);
-            scene.add(line);
-            laserLines.push({ line, drone });
-        });
-
-        // --- 7. İNTERFEYSİN YAXŞILAŞDIRILMASI (Sol Paneldə Dronların Canlı Siyahısı) ---
-        const droneListEl = document.getElementById('drone-list');
-        drones.forEach(d => {
-            const item = document.createElement('div');
-            item.className = "flex justify-between items-center text-xs border border-cyan-500/20 bg-cyan-950/10 p-2 rounded";
-            item.id = `ui-${d.userData.id}`;
-            item.innerHTML = `
-                <span class="font-bold text-white">${d.userData.id}</span>
-                <span class="text-emerald-400 animate-pulse">● FLYING</span>
-                <span class="text-cyan-400 text-[10px]" id="alt-${d.userData.id}">ALT: ${d.position.y.toFixed(1)}m</span>
-            `;
-            droneListEl.appendChild(item);
-        });
-
-        // --- 8. ANİMASİYA VƏ SİMULYASİYA DÖVRÜ ---
-        let clock = new THREE.Clock();
-        let attackMode = false;
-
-        function animate() {
-            requestAnimationFrame(animate);
-            const time = clock.getElapsedTime();
-
-            // 1. Dəniz dalğalanması effekti (Grid nöqtələrinin hərəkəti)
-            const pos = seaGrid.geometry.attributes.position;
-            for (let i = 0; i < pos.count; i++) {
-                const u = pos.getX(i);
-                const v = pos.getY(i);
-                // Riyazi dalğa tənliyi
-                const z = Math.sin(u * 0.1 + time) * 0.8 + Math.cos(v * 0.15 + time) * 0.8;
-                pos.setZ(i, z);
-            }
-            pos.needsUpdate = true;
-
-            // 2. Hədəf hərəkəti və Radar animasiyası
-            targetGroup.position.x = 15 + Math.sin(time * 0.2) * 5;
-            targetGroup.position.z = -15 + Math.cos(time * 0.1) * 5;
-            
-            // Radar halqasının böyüməsi
-            radarRing.scale.set(1 + (time % 3) * 1.5, 1 + (time % 3) * 1.5, 1);
-            radarRingMat.opacity = 1.0 - (time % 3) / 3;
-
-            // 3. Dronların hərəkəti (Swarm hərəkəti)
-            drones.forEach(drone => {
-                const ud = drone.userData;
-                
-                if (attackMode) {
-                    // Hücum rejimi: Hərəkət trayektoriyasını hədəfə yaxınlaşdırırıq
-                    ud.radius = THREE.MathUtils.lerp(ud.radius, 12, 0.02);
-                    ud.speed = 0.02; // Sürət artır
-                } else {
-                    // Normal patrul rejimi
-                    ud.radius = THREE.MathUtils.lerp(ud.radius, 25 + Math.sin(time * 0.5) * 3, 0.01);
-                    ud.speed = 0.006;
-                }
-
-                ud.angle += ud.speed;
-                const targetX = Math.cos(ud.angle) * ud.radius;
-                const targetZ = Math.sin(ud.angle) * ud.radius;
-                // Dalğavari uçuş hündürlüyü (Helical path)
-                const targetY = ud.baseY + Math.sin(time * ud.waveSpeed) * 1.2;
-
-                drone.position.set(targetX, targetY, targetZ);
-
-                // Dronun istiqamətini hərəkət etdiyi tərəfə yönəltmək
-                const nextAngle = ud.angle + 0.1;
-                const lookAtTarget = new THREE.Vector3(
-                    Math.cos(nextAngle) * ud.radius,
-                    targetY,
-                    Math.sin(nextAngle) * ud.radius
-                );
-                drone.lookAt(lookAtTarget);
-
-                // UI-da hündürlükləri yeniləyək
-                const altEl = document.getElementById(`alt-${ud.id}`);
-                if (altEl) altEl.innerText = `ALT: ${(targetY * 10).toFixed(0)}m`;
-            });
-
-            // 4. Lazer xətlərinin dinamik olaraq yenilənməsi
-            laserLines.forEach(item => {
-                const points = [];
-                points.push(item.drone.position.clone());
-                points.push(targetGroup.position.clone());
-                item.line.geometry.setFromPoints(points);
-            });
-
-            // 5. İdarəetmə panelindəki kiçik dinamik datalar
-            document.getElementById('live-coords').innerText = 
-                `${(40.4093 + Math.sin(time*0.1)*0.01).toFixed(4)}° N, ${(49.8671 + Math.cos(time*0.1)*0.01).toFixed(4)}° E`;
-            
-            document.getElementById('compass-dir').innerText = 
-                `${Math.floor((time * 10) % 360)}° ${['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.floor(((time * 10) % 360) / 45)]}`;
-
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        // Ekran ölçüsü dəyişdikdə 3D səhnəni brauzerə uyğunlaşdırırıq
-        window.addEventListener('resize', onWindowResize, false);
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        // --- 9. İNTERAKTİV DÜYMƏ STRATEGİYALARI ---
-        const logTicker = document.getElementById('log-ticker');
+        let currentCategory = 'media';
+        let currentLang = 'az';
+        let peer = null;
+        let localStream = null;
+        let activeConnections = [];
+        let roomLimit = "Unlimited";
+        let generatedCode = "";
+        let codeValidityTimer = null;
+        let isCodeValid = true;
         
-        function addLog(message) {
-            logTicker.innerText = `>> ${message.toUpperCase()}`;
+        // P2P Yaddaş (History) Sistemi
+        let localChatHistory = [];
+
+        let categoryActiveStates = { media: false, chat: false, secret: false, files: false, games: false, camera: false };
+
+        function changeSystemLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-ind').forEach(btn => {
+                btn.className = btn.id === `l-${lang}` ? "px-2 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind bg-cyan-600 text-white" : "px-2 py-1 rounded-lg text-[10px] font-bold transition-all lang-ind text-slate-400";
+            });
+            const pack = langPack[lang];
+            document.getElementById('m-media').innerText = pack.mMedia;
+            document.getElementById('m-browser').innerText = pack.mChat;
+            document.getElementById('m-secret').innerText = pack.mSecret;
+            document.getElementById('m-files').innerText = pack.mFiles;
+            document.getElementById('m-games').innerText = pack.mGames;
+            document.getElementById('m-camera').innerText = pack.mCam;
+            document.getElementById('gatewayTitle').innerText = pack.title;
+            document.getElementById('gatewayDesc').innerText = pack.desc;
+            document.getElementById('tab-c').innerText = pack.tabC;
+            document.getElementById('tab-j').innerText = pack.tabJ;
+            document.getElementById('lblUserLimit').innerText = pack.limit;
+            document.getElementById('btnActionCreate').innerText = pack.btnC;
+            document.getElementById('lblEnterCode').innerText = pack.codeInp;
+            document.getElementById('btnActionJoin').innerText = pack.btnJ;
+            document.getElementById('lblRoomActive').innerText = pack.active;
+            document.getElementById('btnCopyLink').innerText = pack.link;
+            document.getElementById('btnEnterWorkspace').innerText = pack.ws;
+            document.getElementById('navHeader').innerText = pack.navH;
+            updateGatewayUIState();
         }
 
-        // Hücum düyməsi funksiyası
-        document.getElementById('btn-attack').addEventListener('click', () => {
-            attackMode = !attackMode;
-            const btn = document.getElementById('btn-attack');
-            if (attackMode) {
-                btn.innerText = "STANDBY ATTACK MODE";
-                btn.className = "w-full bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500 text-emerald-400 py-2 text-xs font-bold tracking-wider transition duration-300";
-                lineMat.color.setHex(0xff3333); // Lazerlər qırmızı rəngə çevrilir
-                addLog("ALERT: Swarm locked on Target Corvette-X9! Approaching tactical perimeter.");
+        function selectCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-glow', 'text-white'));
+            document.getElementById(`cat-${category}`).classList.add('active-glow', 'text-white');
+            document.querySelectorAll('.panel-node').forEach(p => p.classList.add('hidden'));
+            document.getElementById(`panel-${category}`).classList.remove('hidden');
+            updateGatewayUIState();
+            if(category === 'games' && categoryActiveStates[category]) renderGamePlaygroundEngine();
+        }
+
+        function updateGatewayUIState() {
+            document.getElementById('gatewayTargetBadge').innerText = `${currentCategory.toUpperCase()} NODE`;
+            if(categoryActiveStates[currentCategory]) {
+                document.getElementById('categoryLobbyGateway').classList.add('hidden');
+                document.getElementById('globalStatus').innerText = `Körpü Aktivdir: ${currentCategory.toUpperCase()} | Kod: ${generatedCode}`;
             } else {
-                btn.innerText = "ENGAGE ATTACK MODE";
-                btn.className = "w-full bg-red-600/20 hover:bg-red-600/40 border border-red-500 text-red-400 py-2 text-xs font-bold tracking-wider transition duration-300";
-                lineMat.color.setHex(0x00ffcc); // Lazerlər mavi-yaşıl olur
-                addLog("INFO: Swarm returned to standard patrol and surveillance route.");
+                document.getElementById('categoryLobbyGateway').classList.remove('hidden');
+                document.getElementById('globalStatus').innerText = `Otaq Gözlənilir: ${currentCategory.toUpperCase()}`;
+            }
+        }
+
+        function toggleGatewayTab(tab) {
+            if(tab === 'create') {
+                document.getElementById('tab-c').className = "py-2 text-xs font-bold rounded-lg text-white bg-slate-800/80 shadow";
+                document.getElementById('tab-j').className = "py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white";
+                document.getElementById('gateCreateBlock').classList.remove('hidden');
+                document.getElementById('gateJoinBlock').classList.add('hidden');
+            } else {
+                document.getElementById('tab-j').className = "py-2 text-xs font-bold rounded-lg text-white bg-slate-800/80 shadow";
+                document.getElementById('tab-c').className = "py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white";
+                document.getElementById('gateJoinBlock').classList.remove('hidden');
+                document.getElementById('gateCreateBlock').classList.add('hidden');
+            }
+        }
+
+        async function initializeHardwareMediaTracks() {
+            if(currentCategory === 'media' || currentCategory === 'camera') {
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    document.getElementById('localVideoNode').srcObject = localStream;
+                } catch(err) {
+                    localStream = new MediaStream();
+                }
+            }
+        }
+
+        function startThreeMinuteExpiryCountdown() {
+            let timeLeft = 180; isCodeValid = true;
+            if(codeValidityTimer) clearInterval(codeValidityTimer);
+            codeValidityTimer = setInterval(() => {
+                timeLeft--;
+                let m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                let s = (timeLeft % 60).toString().padStart(2, '0');
+                document.getElementById('dispTimer').innerText = `${m}:${s}`;
+                if(timeLeft <= 0) {
+                    clearInterval(codeValidityTimer); isCodeValid = false;
+                    document.getElementById('dispTimer').innerText = "EXPIRED";
+                }
+            }, 1000);
+        }
+
+        async function executeRoomGeneration() {
+            await initializeHardwareMediaTracks();
+            roomLimit = document.getElementById('roomLimitInput').value.trim() || "Unlimited";
+            const uniqueQuadToken = Math.floor(1000 + Math.random() * 9000).toString();
+            generatedCode = uniqueQuadToken;
+            
+            peer = new Peer(`omni-axis-${currentCategory}-${uniqueQuadToken}`, { host: '1.peerjs.com', port: 443, secure: true, debug: 1 });
+            
+            peer.on('open', () => {
+                document.getElementById('dispCode').innerText = uniqueQuadToken;
+                document.getElementById('gateCreateBlock').classList.add('hidden');
+                document.getElementById('gateResponseBlock').classList.remove('hidden');
+                startThreeMinuteExpiryCountdown();
+            });
+
+            peer.on('call', (call) => {
+                call.answer(localStream);
+                call.on('stream', (remStream) => { injectRemoteStreamViewport(call.peer, remStream); });
+            });
+
+            peer.on('connection', (conn) => {
+                if(!isCodeValid || (roomLimit !== "Unlimited" && activeConnections.length >= parseInt(roomLimit))) {
+                    conn.send({type:'err', reason:'Qoşulma rədd edildi.'});
+                    setTimeout(() => conn.close(), 500); return;
+                }
+                bindP2PDataPipelineEvents(conn);
+                
+                // Yeni istifadəçiyə mövcud chat tarixçəsini göndər
+                if(localChatHistory.length > 0) {
+                    conn.send({type: 'sync-history', history: localChatHistory});
+                }
+            });
+        }
+
+        async function executeRoomConnection() {
+            const token = document.getElementById('roomJoinCodeInput').value.trim();
+            if(token.length !== 4) return alert("4 rəqəmli kodu daxil edin.");
+            await initializeHardwareMediaTracks();
+            generatedCode = token;
+            const targetPeerClusterId = `omni-axis-${currentCategory}-${token}`;
+
+            peer = new Peer({ host: '1.peerjs.com', port: 443, secure: true, debug: 1 });
+            peer.on('open', () => {
+                const dataConnection = peer.connect(targetPeerClusterId);
+                bindP2PDataPipelineEvents(dataConnection);
+
+                if(currentCategory === 'media' || currentCategory === 'camera') {
+                    const call = peer.call(targetPeerClusterId, localStream);
+                    call.on('stream', (remStream) => { injectRemoteStreamViewport(targetPeerClusterId, remStream); });
+                }
+                categoryActiveStates[currentCategory] = true; updateGatewayUIState();
+            });
+        }
+
+        function bindP2PDataPipelineEvents(conn) {
+            activeConnections.push(conn);
+            document.getElementById('peerCounterGlobal').innerText = activeConnections.length + 1;
+
+            conn.on('data', (payload) => {
+                if(payload.type === 'err') { alert(payload.reason); window.location.reload(); }
+                if(payload.type === 'sync-history') handleHistorySync(payload.history);
+                if(payload.type === 'chat') { 
+                    displayChatBubbleNode(payload.user, payload.msg, false);
+                    localChatHistory.push({user: payload.user, msg: payload.msg, isMe: false});
+                }
+                if(payload.type === 'secret') activateSecretSelfDestructExplosion(payload.msg);
+                if(payload.type === 'file-init') setupFileBufferStream(payload);
+                if(payload.type === 'file-slice') collectFileChunkSlice(payload);
+                if(payload.type === 'snap-req') captureAndSendSnapshotPayload();
+                if(payload.type === 'snap-res') document.getElementById('imgRemote').src = payload.dataUrl;
+                if(payload.type === 'game-relay') handleSynchronizedGameSignals(payload);
+            });
+
+            conn.on('close', () => {
+                activeConnections = activeConnections.filter(c => c.peer !== conn.peer);
+                document.getElementById('peerCounterGlobal').innerText = activeConnections.length + 1;
+                const el = document.getElementById(`node-${conn.peer}`); if(el) el.remove();
+            });
+        }
+
+        // TARIXÇƏNİN SINXRONİZASİYASI METODU
+        function handleHistorySync(history) {
+            localChatHistory = history;
+            const container = document.getElementById('chatFlowBox');
+            const emptyState = document.getElementById('chatEmptyState');
+            if(emptyState) emptyState.remove();
+            
+            history.forEach(item => {
+                const block = document.createElement('div');
+                block.className = `flex flex-col max-w-[80%] ${item.isMe ? 'ml-auto items-end':'mr-auto items-start'}`;
+                block.innerHTML = `<span class="text-[9px] text-slate-500 mb-0.5 font-mono">${item.user}</span>
+                    <div class="px-3.5 py-2 rounded-2xl text-xs border ${item.isMe ? 'bg-cyan-600 border-cyan-500 text-white rounded-tr-none':'bg-slate-900 border-slate-800 text-slate-200 rounded-tl-none'}">${item.msg.replace(/</g,"&lt;")}</div>`;
+                container.appendChild(block);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function injectRemoteStreamViewport(peerId, stream) {
+            if(document.getElementById(`node-${peerId}`)) return;
+            const grid = document.getElementById('mediaGrid');
+            const container = document.createElement('div');
+            container.id = `node-${peerId}`;
+            container.className = "relative bg-slate-950 border border-slate-900 rounded-2xl overflow-hidden aspect-video shadow-xl";
+            const video = document.createElement('video');
+            video.srcObject = stream; video.autoplay = true; video.playsInline = true; video.className = "w-full h-full object-cover";
+            container.appendChild(video); grid.appendChild(container);
+        }
+
+        // CHAT ENGINE
+        function broadcastChatMessage(e) {
+            e.preventDefault();
+            const inp = document.getElementById('chatInput'); if(!inp.value.trim()) return;
+            const userAlias = `Peer-${peer.id.substring(0,3)}`;
+            
+            activeConnections.forEach(c => c.send({type:'chat', user: userAlias, msg:inp.value}));
+            displayChatBubbleNode("Siz", inp.value, true);
+            localChatHistory.push({user: "Siz", msg: inp.value, isMe: true});
+            inp.value = "";
+        }
+
+        function displayChatBubbleNode(user, msg, isMe) {
+            const container = document.getElementById('chatFlowBox');
+            const emptyState = document.getElementById('chatEmptyState'); if(emptyState) emptyState.remove();
+            
+            const block = document.createElement('div');
+            block.className = `flex flex-col max-w-[80%] ${isMe ? 'ml-auto items-end':'mr-auto items-start'}`;
+            block.innerHTML = `<span class="text-[9px] text-slate-500 mb-0.5 font-mono">${user}</span>
+                <div class="px-3.5 py-2 rounded-2xl text-xs border ${isMe ? 'bg-cyan-600 border-cyan-500 text-white rounded-tr-none':'bg-slate-900 border-slate-800 text-slate-200 rounded-tl-none'}">${msg.replace(/</g,"&lt;")}</div>`;
+            container.appendChild(block); container.scrollTop = container.scrollHeight;
+        }
+
+        // SECRET LOGIC
+        function broadcastSecretMessage() {
+            const inp = document.getElementById('secretInput'); if(!inp.value.trim()) return;
+            activeConnections.forEach(c => c.send({type:'secret', msg:inp.value}));
+            inp.value = ""; alert("Gizli mesaj göndərildi!");
+        }
+        function activateSecretSelfDestructExplosion(msg) {
+            const box = document.getElementById('secretRevealZone');
+            box.innerText = msg; box.className = "min-h-[70px] bg-red-950/30 border border-red-500 text-red-400 font-mono text-sm font-bold flex items-center justify-center p-4 text-center rounded-xl animate-pulse";
+            setTimeout(() => { box.innerText = "Giriş gözlənilir..."; box.className = "min-h-[70px] bg-black/40 border-2 border-dashed border-slate-850 rounded-xl flex items-center justify-center p-4 text-center text-xs font-bold text-slate-500"; }, 5000);
+        }
+
+        // ENTERPRISE ADVANCED MULTI-FILE PIPELINE WITH METRICS
+        let inboundFilePools = {}; 
+        async function initiateFilePipeline(picker) {
+            const files = picker.files; if(files.length === 0) return;
+            const maxSliceSize = 16384; 
+            const outputZone = document.getElementById('fileProgressOutput');
+
+            for (let i = 0; i < files.length; i++) {
+                const targetFile = files[i];
+                const fileTransferId = `file-${Date.now()}-${i}`;
+                
+                const progressIndicator = document.createElement('div');
+                progressIndicator.id = `tx-${fileTransferId}`;
+                progressIndicator.className = "bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2 text-[11px]";
+                progressIndicator.innerHTML = `
+                    <div class="flex justify-between font-medium text-slate-300">
+                        <span>📤 ${targetFile.name}</span>
+                        <span class="metrics text-amber-400 font-mono">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-850">
+                        <div class="progress-bar bg-cyan-500 h-full w-0 transition-all duration-100"></div>
+                    </div>`;
+                outputZone.appendChild(progressIndicator);
+
+                activeConnections.forEach(c => c.send({ type: 'file-init', fId: fileTransferId, name: targetFile.name, size: targetFile.size }));
+                await sendSingleFileInSlices(targetFile, fileTransferId, maxSliceSize, progressIndicator);
+            }
+        }
+
+        function sendSingleFileInSlices(file, fId, maxSliceSize, indicatorEl) {
+            return new Promise((resolve) => {
+                const fileReader = new FileReader();
+                let byteOffset = 0;
+                let startTime = Date.now();
+
+                fileReader.onload = function(evt) {
+                    activeConnections.forEach(c => c.send({ type: 'file-slice', fId: fId, raw: evt.target.result }));
+                    byteOffset += maxSliceSize;
+                    
+                    let pct = Math.min(100, Math.floor((byteOffset / file.size) * 100));
+                    let elapsed = (Date.now() - startTime) / 1000;
+                    let speed = elapsed > 0 ? (byteOffset / (1024 * 1024)) / elapsed : 0;
+                    
+                    indicatorEl.querySelector('.progress-bar').style.width = `${pct}%`;
+                    indicatorEl.querySelector('.metrics').innerText = `${pct}% (${speed.toFixed(1)} MB/s)`;
+
+                    if(byteOffset < file.size) { readNextSliceBlock(); } 
+                    else {
+                        indicatorEl.querySelector('.metrics').className = "text-emerald-400 font-mono font-bold";
+                        indicatorEl.querySelector('.metrics').innerText = "Tamamlandı ✓";
+                        resolve();
+                    }
+                };
+                function readNextSliceBlock() { const chunk = file.slice(byteOffset, byteOffset + maxSliceSize); fileReader.readAsArrayBuffer(chunk); }
+                readNextSliceBlock();
+            });
+        }
+
+        function setupFileBufferStream(meta) { 
+            inboundFilePools[meta.fId] = { name: meta.name, size: meta.size, chunks: [] };
+            const outputZone = document.getElementById('fileProgressOutput');
+            const progressIndicator = document.createElement('div');
+            progressIndicator.id = `rx-${meta.fId}`;
+            progressIndicator.className = "bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2 text-[11px]";
+            progressIndicator.innerHTML = `
+                <div class="flex justify-between font-medium text-slate-300">
+                    <span>📥 ${meta.name}</span>
+                    <span class="status text-cyan-400 font-mono">Qəbul edilir...</span>
+                </div>
+                <div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-850">
+                    <div class="progress-bar bg-blue-500 h-full w-0 transition-all duration-100"></div>
+                </div>`;
+            outputZone.appendChild(progressIndicator);
+        }
+
+        function collectFileChunkSlice(payload) {
+            const inst = inboundFilePools[payload.fId]; if (!inst) return;
+            inst.chunks.push(payload.raw);
+            let downloadedBytes = inst.chunks.length * 16384;
+            let pct = Math.min(100, Math.floor((downloadedBytes / inst.size) * 100));
+            
+            const targetContainer = document.getElementById(`rx-${payload.fId}`);
+            if(targetContainer) {
+                targetContainer.querySelector('.progress-bar').style.width = `${pct}%`;
+            }
+
+            if(downloadedBytes >= inst.size) {
+                const blob = new Blob(inst.chunks); const objectUrl = URL.createObjectURL(blob);
+                if (targetContainer) {
+                    targetContainer.querySelector('.status').className = "text-emerald-400 font-mono font-bold";
+                    targetContainer.querySelector('.status').innerText = "Hazırdır";
+                    const dlBtn = document.createElement('a'); dlBtn.href = objectUrl; dlBtn.download = inst.name; dlBtn.innerText = `Faylı Yaddaşda Saxla 💾`;
+                    dlBtn.className = "block bg-emerald-500 text-black font-extrabold text-[11px] py-2 rounded-lg mt-2 text-center shadow transition-all hover:opacity-90";
+                    targetContainer.appendChild(dlBtn);
+                }
+                delete inboundFilePools[payload.fId]; 
+            }
+        }
+
+        // GAMES MATRIX
+        function renderGamePlaygroundEngine() {
+            const selectedGame = document.getElementById('activeGameSelector').value;
+            const stage = document.getElementById('gameArenaPort'); stage.innerHTML = "";
+            if(selectedGame === 'tic') {
+                stage.innerHTML = `<div class="grid grid-cols-3 gap-2 w-full max-w-[240px]">` + Array(9).fill(0).map((_,i)=>`<button onclick="submitTicMove(${i})" id="cell-${i}" class="bg-slate-950 border border-slate-850 aspect-square text-xl font-bold text-cyan-400 hover:bg-slate-900 rounded-xl"></button>`).join('') + `</div>`;
+            } else if(selectedGame === 'click') {
+                clickMatchScoreLocal = 0;
+                stage.innerHTML = `<div class="w-full max-w-xs text-center space-y-3">
+                    <div class="flex justify-between text-xs bg-slate-950 border border-slate-900 p-3 rounded-xl font-mono"><span>Siz: <b id="sLocal">0</b></span><span>Rəqib: <b id="sRemote">0</b></span></div>
+                    <button onclick="triggerClickHit()" class="w-full bg-gradient-to-r from-orange-500 to-red-600 py-6 rounded-2xl text-white font-black text-sm shadow-md">KLİK!</button>
+                </div>`;
+            }
+        }
+        function submitTicMove(i) { activeConnections.forEach(c => c.send({type:'game-relay', mode:'tic', index:i, token:'O'})); document.getElementById(`cell-${i}`).innerText = 'X'; }
+        let clickMatchScoreLocal = 0; function triggerClickHit() { clickMatchScoreLocal++; document.getElementById('sLocal').innerText = clickMatchScoreLocal; activeConnections.forEach(c => c.send({type:'game-relay', mode:'click', score:clickMatchScoreLocal})); }
+        function handleSynchronizedGameSignals(payload) {
+            if(payload.mode === 'tic') { const cell = document.getElementById(`cell-${payload.index}`); if(cell) cell.innerText = payload.token; }
+            if(payload.mode === 'click') { const rem = document.getElementById('sRemote'); if(rem) rem.innerText = payload.score; }
+        }
+
+        // DUAL CAMERA SNAPSHOT
+        function triggerCameraSnapshotDuel() { activeConnections.forEach(c => c.send({type:'snap-req'})); freezeAndRenderLocalCanvasCapture('imgLocal'); }
+        function captureAndSendSnapshotPayload() { const url = freezeAndRenderLocalCanvasCapture('imgLocal'); activeConnections.forEach(c => c.send({type:'snap-res', dataUrl:url})); }
+        function freezeAndRenderLocalCanvasCapture(targetId) {
+            const vid = document.getElementById('localVideoNode'); const canvas = document.createElement('canvas');
+            canvas.width = vid.videoWidth || 640; canvas.height = vid.videoHeight || 480;
+            canvas.getContext('2d').drawImage(vid, 0, 0, canvas.width, canvas.height);
+            const u = canvas.toDataURL('image/jpeg'); document.getElementById(targetId).src = u; return u;
+        }
+
+        function toggleAudioTrack() { const track = localStream.getAudioTracks()[0]; if(track) { track.enabled = !track.enabled; document.getElementById('btnMic').classList.toggle('bg-red-600'); } }
+        function toggleVideoTrack() { const track = localStream.getVideoTracks()[0]; if(track) { track.enabled = !track.enabled; document.getElementById('btnCam').classList.toggle('bg-red-600'); } }
+        function copyGatewayDirectLink() { navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?cat=${currentCategory}&code=${generatedCode}`); alert("Link kopyalandı!"); }
+        function dismissGatewayAndEnter() { categoryActiveStates[currentCategory] = true; updateGatewayUIState(); }
+        function leaveCurrentRoomState() { if(peer) peer.destroy(); window.location.reload(); }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            changeSystemLanguage('az');
+            const params = new URLSearchParams(window.location.search);
+            if(params.get('cat') && params.get('code')) {
+                selectCategory(params.get('cat'));
+                document.getElementById('roomJoinCodeInput').value = params.get('code');
+                toggleGatewayTab('join');
             }
         });
-
-        // Trayektoriya dəyişmə düyməsi
-        document.getElementById('btn-swarm').addEventListener('click', () => {
-            drones.forEach(d => {
-                d.userData.angle += Math.random() * 2; // Dronların mövqeyini ani dəyişdiririk
-                d.userData.waveSpeed = 1 + Math.random() * 3;
-            });
-            addLog("SWARM PROTOCOL: Re-routing swarm trajectories dynamically.");
-        });
-
-        // Sistem saatı yenilənməsi
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('sys-time').innerText = now.toTimeString().split(' ')[0];
-        }, 1000);
-
-        // İlkin işə salma
-        addLog("SYSTEM INITIALIZED. ALL CODMON UNITS ENGAGED.");
-        animate();
     </script>
 </body>
 </html>
